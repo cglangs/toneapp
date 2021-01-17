@@ -1,10 +1,10 @@
-from os import path
+from os import listdir
 from pydub import AudioSegment
 
-# files                                                                         
-src = "test_a1_FV1.mp3"
-dst = "test_a1_FV1.wav"
 
-# convert mp3 to wav                                                           
-sound = AudioSegment.from_mp3(src)
-sound.export(dst, format="wav")
+for filename in listdir("./tone_perfect"):
+	filename_split = filename.split(".")
+	print(filename_split[0])
+	sound = AudioSegment.from_mp3("./tone_perfect/" + filename)
+	sound.export("./tone_wav/" + filename_split[0] + ".wav", format="wav")
+
