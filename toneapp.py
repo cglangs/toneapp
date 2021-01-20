@@ -59,6 +59,5 @@ def splitter(df):
 dblock = DataBlock(blocks=(ImageBlock, MultiCategoryBlock),
                    splitter=splitter,
                    get_x=get_x, 
-                   get_y=get_y,
-                   item_tfms = RandomResizedCrop(128, min_scale=0.35))
+                   get_y=get_y)
 dls = dblock.dataloaders(df)
