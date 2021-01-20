@@ -45,19 +45,22 @@ def create_spectrograms():
 #create_spectrograms()
 
 fnames = [audio_file for audio_file in os.listdir(path + "/spectrograms")]
-  labels = [fname.split("_")[0][:-1] + " " + fname.split("_")[0][-1] for fname in fnames]
+  labels = [fname.split("_")[0][-1] for fname in fnames]
 
 df = pd.DataFrame({'fnames':fnames, 'labels':labels})
 def get_x(r): return path + "/spectrograms/" + r['fnames']
-def get_y(r): return r['labels'].split(' ')
+def get_y(r): return r['labels']
 
 def splitter(df):
     train = df.index[df["fnames"].apply(lambda x: x.split('_')[1]) != "FV3"].tolist()
     valid = df.index[df["fnames"].apply(lambda x: x.split('_')[1]) == "FV3"].tolist()
     return train,valid
 
-dblock = DataBlock(blocks=(ImageBlock, MultiCategoryBlock),
+dblock = DataBlock(blocks=(ImageBlock, CategoryBlock),
                    splitter=splitter,
                    get_x=get_x, 
                    get_y=get_y)
 dls = dblock.dataloaders(df)
+
+learn = cnn_learner(dls, resnet18, metrics=error_rate)
+learn.fine_tune(1)
