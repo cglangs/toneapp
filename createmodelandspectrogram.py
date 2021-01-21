@@ -45,7 +45,7 @@ def create_spectrograms():
 #create_spectrograms()
 
 fnames = [audio_file for audio_file in os.listdir(path + "/spectrograms")]
-  labels = [fname.split("_")[0][-1] for fname in fnames]
+labels = [fname.split("_")[0][-1] for fname in fnames]
 
 df = pd.DataFrame({'fnames':fnames, 'labels':labels})
 def get_x(r): return path + "/spectrograms/" + r['fnames']
@@ -60,29 +60,13 @@ dblock = DataBlock(blocks=(ImageBlock, CategoryBlock),
                    splitter=splitter,
                    get_x=get_x, 
                    get_y=get_y)
+
 dls = dblock.dataloaders(df)
 
-#learn = cnn_learner(dls, resnet18, metrics=error_rate)
-#learn.fine_tune(3)
 
-dest = path + '/fastai'
+learn = cnn_learner(dls, resnet18, metrics=error_rate)
+learn.fine_tune(3)
+
+#dest = path + '/fastai'
 #learn.save(dest + '/FV3_3epoch_model')
-
-#learn=create_cnn(data, models.resnet18, metrics=error_rate)
-#learn.load(dest + '/FV3_3epoch_model.pth')
-
-audio_filename = 'test_a1_FV1.wav'
-        samples, sample_rate = librosa.load(dest + '/' + audio_filename)
-        fig = plt.figure(figsize=[0.72,0.72])
-        ax = fig.add_subplot(111)
-        ax.axes.get_xaxis().set_visible(False)
-        ax.axes.get_yaxis().set_visible(False)
-        ax.set_frame_on(False)
-        filename  = audio_filename.replace('.wav','.png')
-        S = librosa.feature.melspectrogram(y=samples, sr=sample_rate)
-        librosa.display.specshow(librosa.power_to_db(S, ref=np.max))
-        plt.savefig(filename, dpi=400, bbox_inches='tight',pad_inches=0)
-        plt.close('all')
-
-learn.predict('test_a1_FV1.png')
 
