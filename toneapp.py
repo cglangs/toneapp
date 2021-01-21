@@ -69,7 +69,7 @@ dest = path + '/fastai'
 #learn.save(dest + '/FV3_3epoch_model')
 
 #learn=create_cnn(data, models.resnet18, metrics=error_rate)
-#learn.load(dest + '/FV3_3epoch_model')
+#learn.load(dest + '/FV3_3epoch_model.pth')
 
 audio_filename = 'test_a1_FV1.wav'
         samples, sample_rate = librosa.load(dest + '/' + audio_filename)
