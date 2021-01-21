@@ -13,7 +13,7 @@ device = torch.device('cpu')
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
-Threshold = 5
+Threshold = 20
 
 SHORT_NORMALIZE = (1.0/32768.0)
 chunk = 1024
@@ -67,6 +67,7 @@ class Recorder:
     def __init__(self):
         self.p = pyaudio.PyAudio()
         self.finished = False
+        self.isRecording = False
         self.stream = self.p.open(format=FORMAT,
                                   channels=CHANNELS,
                                   rate=RATE,
@@ -74,14 +75,7 @@ class Recorder:
                                   output=True,
                                   frames_per_buffer=chunk)
     def record(self):
-        '''
-        self.stream = self.p.open(format=FORMAT,
-                                  channels=CHANNELS,
-                                  rate=RATE,
-                                  input=True,
-                                  output=True,
-                                  frames_per_buffer=chunk)
-        '''
+        self.isRecording = True
         print('Noise detected, recording beginning')
         rec = []
         current = time.time()
@@ -95,8 +89,6 @@ class Recorder:
             current = time.time()
             rec.append(data)
 
-
-        self.finished = True
         self.write(b''.join(rec))
 
 
@@ -130,6 +122,7 @@ class Recorder:
         #os.remove(filename)
         #os.remove(spectrofilename)
         print(prediction)
+        self.isRecording = False
 
         
         #print('Written to file: {}'.format(filename))
@@ -140,11 +133,12 @@ class Recorder:
 
     def listen(self):
         print('Listening beginning')
-        while not self.finished:
-            input = self.stream.read(chunk)
-            rms_val = self.rms(input)
-            if rms_val > Threshold:
-                self.record()
+        while True:
+            if not self.isRecording:
+                input = self.stream.read(chunk, exception_on_overflow=False)
+                rms_val = self.rms(input)
+                if rms_val > Threshold:
+                    self.record()
 
 
 a = Recorder()
