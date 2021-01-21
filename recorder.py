@@ -87,8 +87,11 @@ class Recorder:
 
             current = time.time()
             rec.append(data)
+
+
         self.finished = True
         self.write(b''.join(rec))
+
 
     def write(self, recording):
         n_files = len(os.listdir(f_name_directory))
@@ -117,12 +120,12 @@ class Recorder:
 
 
         prediction = learn.predict(spectrofilename)
-        #os.remove(filename)
-        #os.remove(spectrofilename)
+        os.remove(filename)
+        os.remove(spectrofilename)
         print(prediction)
 
         
-        print('Written to file: {}'.format(filename))
+        #print('Written to file: {}'.format(filename))
         #print('Returning to listening')
 
 
