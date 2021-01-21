@@ -13,7 +13,7 @@ device = torch.device('cpu')
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
-Threshold = 10
+Threshold = 5
 
 SHORT_NORMALIZE = (1.0/32768.0)
 chunk = 1024
@@ -66,15 +66,22 @@ class Recorder:
 
     def __init__(self):
         self.p = pyaudio.PyAudio()
+        self.finished = False
         self.stream = self.p.open(format=FORMAT,
                                   channels=CHANNELS,
                                   rate=RATE,
                                   input=True,
                                   output=True,
                                   frames_per_buffer=chunk)
-        self.finished = False
-
     def record(self):
+        '''
+        self.stream = self.p.open(format=FORMAT,
+                                  channels=CHANNELS,
+                                  rate=RATE,
+                                  input=True,
+                                  output=True,
+                                  frames_per_buffer=chunk)
+        '''
         print('Noise detected, recording beginning')
         rec = []
         current = time.time()
@@ -82,7 +89,7 @@ class Recorder:
 
         while current <= end:
 
-            data = self.stream.read(chunk)
+            data = self.stream.read(chunk, exception_on_overflow = False)
             if self.rms(data) >= Threshold: end = time.time() + TIMEOUT_LENGTH
 
             current = time.time()
@@ -120,8 +127,8 @@ class Recorder:
 
 
         prediction = learn.predict(spectrofilename)
-        os.remove(filename)
-        os.remove(spectrofilename)
+        #os.remove(filename)
+        #os.remove(spectrofilename)
         print(prediction)
 
         
@@ -138,6 +145,7 @@ class Recorder:
             rms_val = self.rms(input)
             if rms_val > Threshold:
                 self.record()
+
 
 a = Recorder()
 
