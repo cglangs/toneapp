@@ -8,21 +8,24 @@ import numpy as np
 import librosa, librosa.display
 import matplotlib.pyplot as plt
 import numpy as np
+from pydub import AudioSegment
+from pydub.playback import play
+
 from fastai.vision.all import *
 device = torch.device('cpu')
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
-Threshold = 20
+Threshold = 5
 
 SHORT_NORMALIZE = (1.0/32768.0)
-chunk = 1024
+chunk = 2048
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 22050
 swidth = 2
 
-TIMEOUT_LENGTH = 0.1
+TIMEOUT_LENGTH = 0.05
 
 f_name_directory = './records'
 
@@ -119,9 +122,13 @@ class Recorder:
 
 
         prediction = learn.predict(spectrofilename)
-        #os.remove(filename)
-        #os.remove(spectrofilename)
+  
         print(prediction)
+        song = AudioSegment.from_wav(filename)
+        play(song)
+        os.remove(filename)
+        os.remove(spectrofilename)
+        time.sleep(1)
         self.isRecording = False
 
         
