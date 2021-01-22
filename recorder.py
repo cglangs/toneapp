@@ -16,13 +16,13 @@ device = torch.device('cpu')
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
-Threshold = 5
+Threshold = 50
 
 SHORT_NORMALIZE = (1.0/32768.0)
 chunk = 2048
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 22050
+RATE = 44100
 swidth = 2
 
 TIMEOUT_LENGTH = 0.05
@@ -69,7 +69,6 @@ class Recorder:
 
     def __init__(self):
         self.p = pyaudio.PyAudio()
-        self.finished = False
         self.isRecording = False
         self.stream = self.p.open(format=FORMAT,
                                   channels=CHANNELS,
@@ -85,7 +84,6 @@ class Recorder:
         end = time.time() + TIMEOUT_LENGTH
 
         while current <= end:
-
             data = self.stream.read(chunk, exception_on_overflow = False)
             if self.rms(data) >= Threshold: end = time.time() + TIMEOUT_LENGTH
 
@@ -96,6 +94,7 @@ class Recorder:
 
 
     def write(self, recording):
+        print(type(recording))
         n_files = len(os.listdir(f_name_directory))
 
         filename = os.path.join(f_name_directory, '{}.wav'.format(n_files))
@@ -124,8 +123,8 @@ class Recorder:
         prediction = learn.predict(spectrofilename)
   
         print(prediction)
-        song = AudioSegment.from_wav(filename)
-        play(song)
+        rec = AudioSegment.from_wav(filename)
+        play(rec)
         os.remove(filename)
         os.remove(spectrofilename)
         time.sleep(1)
