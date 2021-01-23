@@ -47,12 +47,15 @@ def write(recording):
 	wf.writeframes(recording)
 	wf.close()
 
+	rec = AudioSegment.from_wav(filename)
+	play(rec)
+
 
 
     #prediction = learn.predict(spectrofilename)
 
     #print(prediction)
-	os.remove(filename)
+	#os.remove(filename)
 
 
 @socketIo.on("message")
