@@ -15,10 +15,6 @@ let socket = io.connect(`${endpoint}`)
 class App extends Component {
 
 
-  state = {
-    isRecording: false
-  }
-
   initRecorder(stream, listofBlobs){
       let _this = this
       let recorder = RecordRTC(stream, {
@@ -26,61 +22,40 @@ class App extends Component {
       sampleRate: 44100,
       bufferSize: 2048,
       numberOfAudioChannels: 1,
-      recorderType: RecordRTC.StereoAudioRecorder,
-      timeSlice: 100,
-      ondataavailable: function(blob) {
-        console.log(_this.state)
-        if(_this.state.isRecording){
-          listofBlobs.push(blob)
-        }
-      }
+      recorderType: RecordRTC.StereoAudioRecorder
     });
       return recorder
   }
 
   componentDidMount(){
     let _this = this
-    console.log(_this)
-    var listofBlobs = [];
     var newAudio = document.createElement('audio');
     newAudio.autoplay = true;
     navigator.mediaDevices.getUserMedia({audio: true }).then(async function(stream) {
-      var recorder = _this.initRecorder(stream,listofBlobs)
-        var options = {};
+      var recorder = _this.initRecorder(stream)
+        var options = {threshold: -65};
         var speechEvents = hark(stream, options);
-        recorder.startRecording();
 
         speechEvents.on('speaking', function() {
-          _this.setState({isRecording: true})
+          recorder.startRecording();
           console.log('speaking');
         });
      
         speechEvents.on('stopped_speaking', function() {
           console.log('stopped_speaking');
-          _this.setState({isRecording: false})
-          var singleBlob = new Blob(listofBlobs, {
-            type: 'audio/wav'
-          });
-          console.log(singleBlob)
-          socket.emit('message', singleBlob);
-
-
-          //recorder.stopRecording(async function() {
+          recorder.stopRecording(async function() {
               //recorder.save('audiorecording.wav');
-              //let blob = await recorder.getBlob();
+              let blob = await recorder.getBlob();
               //newAudio.src = URL.createObjectURL(blob)
               //newAudio.play()
-              //socket.emit('message', blob);
-              //recorder = _this.initRecorder(stream,listofBlobs)
-              
-          //});
+              socket.emit('message', blob);
+              //recorder = _this.initRecorder(stream)
+              ;
+          });
         });
     });
 
   }
-
-
-
 
 
   render(){
