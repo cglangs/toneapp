@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import hark from 'hark'
 
 
-import io from "socket.io-client"
+//import io from "socket.io-client"
 import RecordRTC from "recordrtc"
 
 
@@ -10,15 +10,15 @@ import RecordRTC from "recordrtc"
 import './App.css';
 
 
-let endpoint = "http://localhost:5000"
-let socket = io.connect(`${endpoint}`)
+//let endpoint = "http://localhost:5000"
+//let socket = io.connect(`${endpoint}`)
 class App extends Component {
 
   initRecorder(stream){
       let recorder = RecordRTC(stream, {
       type: 'audio',
       sampleRate: 44100,
-      bufferSize: 2048,
+      bufferSize: 1024,
       numberOfAudioChannels: 1,
       recorderType: RecordRTC.StereoAudioRecorder
     });
@@ -27,11 +27,13 @@ class App extends Component {
 
   componentDidMount(){
     let _this = this
+    var newAudio = document.createElement('audio');
+    newAudio.autoplay = true;
     navigator.mediaDevices.getUserMedia({audio: true }).then(async function(stream) {
       var recorder = _this.initRecorder(stream)
         var options = {};
         var speechEvents = hark(stream, options);
-     
+
         speechEvents.on('speaking', function() {
           recorder.startRecording();
           console.log('speaking');
@@ -42,8 +44,10 @@ class App extends Component {
           recorder.stopRecording(async function() {
               //recorder.save('audiorecording.wav');
               let blob = await recorder.getBlob();
-              socket.emit('message', blob);
-              //recorder = _this.initRecorder(stream)
+              newAudio.src = URL.createObjectURL(blob)
+              newAudio.play()
+              //socket.emit('message', blob);
+              recorder = _this.initRecorder(stream)
               ;
           });
         });
