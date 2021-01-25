@@ -16,7 +16,7 @@ device = torch.device('cpu')
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
-Threshold = 7
+Threshold = 30
 
 SHORT_NORMALIZE = (1.0/32768.0)
 chunk = 2048
@@ -127,7 +127,7 @@ class Recorder:
         play(rec)
         os.remove(filename)
         os.remove(spectrofilename)
-        time.sleep(1)
+        time.sleep(2)
         self.isRecording = False
 
         
