@@ -22,7 +22,8 @@ class App extends Component {
     voice_present: false,
     recording: false,
     new_audio: null,
-    get_tone: false
+    get_tone: false,
+    predicted_tone: null
   }
 
   initRecorder = (stream, listofBlobs) => {
@@ -34,6 +35,13 @@ class App extends Component {
       recorderType: RecordRTC.StereoAudioRecorder
     });
       return recorder
+  }
+
+  componentDidMount = () => {
+    socket.on('predicted_tone', data => {
+      console.log(data)
+      this.setState({predicted_tone: data})
+    })
   }
 
 
@@ -48,7 +56,7 @@ class App extends Component {
         speechEvents.on('speaking', function() {
           console.log('speaking');
           recorder.startRecording();
-          _this.setState({voice_present: true})
+          _this.setState({voice_present: true, predicted_tone: null})
         });
      
         speechEvents.on('stopped_speaking', function() {
@@ -56,6 +64,7 @@ class App extends Component {
           recorder.stopRecording(async function() {
           //recorder.save('audiorecording.wav');
           let blob = await recorder.getBlob();
+          console.log(_this.state.get_tone)
           if(_this.state.get_tone){
             socket.emit('voice_recorded', blob);
           }
@@ -78,35 +87,39 @@ class App extends Component {
   }
 
   replayAudio = () => {
-    console.log(this.state)
     if(this.state.new_audio){
       this.state.new_audio.play()
     }
   }
 
   render(){
+    //console.log(this.state)
     let btn_class = this.state.recording ? "pressedButton" : "defaultButton";
     return (
       <div className="App">
         <header className="App-header">
-        {this.state.voice_present && "Voice heard"}
         <audio id="replay"/>
+        <label>{this.state.predicted_tone && ("Tone:" + this.state.predicted_tone)}</label>
+        <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
         <button className={btn_class} onClick={this.startRecording}>
                   {this.state.recording ? "Recording" : "Record"}
         </button>
          <button  className={"defaultButton"} onClick={this.replayAudio}>
                   Replay
         </button>
-        <div style={{display: "flex", flexDirectioion: "row", justifyContent: "center", "marginTop": "20px", width: "40%"}}>
+        </div>
+        <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px", width: "40%"}}>
         <p style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginRight": "20px"}}>{"Test Mic"}</p> 
         <label className="switch">
-          <input type="checkbox" checked={this.state.show_tone} />
+          <input type="checkbox" checked={this.state.get_tone} onChange={this.toggleMic} />
           <span className="slider round"></span>
         </label>
           <p style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginLeft": "5%"}}>{"Get Tone"}</p> 
          </div>
+        <label>Mic sensitivity</label>
         <input type="range" min="50" max="79" disabled={this.state.harkObject == null}value={this.state.threshold_decibels} onChange={this.handleSliderChange}/>
         <span>{this.state.threshold_decibels - 49 }</span>
+        {this.state.voice_present && "Voice heard"}
         </header>
       </div>
     );
