@@ -36,3 +36,13 @@
     transform: rotate(360deg);
   }
 }
+
+.defaultButton {
+  background-color: white;
+  margin-bottom: 30px;
+}
+
+.pressedButton {
+  background-color: darkgray;
+  margin-bottom: 30px;
+}
