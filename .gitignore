@@ -5,3 +5,6 @@ models
 records
 notes.txt
 node_modules
+get_duration.py
+test.py
+test_spectrograms

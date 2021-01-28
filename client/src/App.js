@@ -66,7 +66,7 @@ class App extends Component {
           let blob = await recorder.getBlob();
           console.log(_this.state.get_tone)
           if(_this.state.get_tone){
-            socket.emit('voice_recorded', blob);
+            socket.emit('voice_recorded', {voice_recording: blob, threshold: -1 * _this.state.threshold_decibels});
           }
           newAudio.src = URL.createObjectURL(blob)
           speechEvents.stop()

@@ -31,15 +31,15 @@ TIMEOUT_LENGTH = 0.05
 f_name_directory = './records'
 
 fnames = [audio_file for audio_file in os.listdir("spectrograms")]
-labels = [fname.split("_")[0][-1] for fname in fnames]
+labels = [fname.split("_")[-3][-1] for fname in fnames]
 
 df = pd.DataFrame({'fnames':fnames, 'labels':labels})
 def get_x(r): return "spectrograms/" + r['fnames']
 def get_y(r): return r['labels']
 
 def splitter(df):
-    train = df.index[df["fnames"].apply(lambda x: x.split('_')[1]) != "FV3"].tolist()
-    valid = df.index[df["fnames"].apply(lambda x: x.split('_')[1]) == "FV3"].tolist()
+    train = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) != "FV3"].tolist()
+    valid = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) == "FV3"].tolist()
     return train,valid
 
 dblock = DataBlock(blocks=(ImageBlock, CategoryBlock),
@@ -83,14 +83,14 @@ def detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=10):
 
     assert chunk_size > 0 # to avoid infinite loop
     while sound[trim_ms:trim_ms+chunk_size].dBFS < silence_threshold and trim_ms < len(sound):
-        trim_ms += chunk_size
+    	trim_ms += chunk_size
 
     return trim_ms
 
-def write(recording):
+def write(data):
 	#print(recording)
-	print(type(recording))
-	print(len(recording))
+	#print(type(recording))
+	#print(len(recording))
 	n_files = len(os.listdir(f_name_directory))
 
 	filename = os.path.join(f_name_directory, '{}.wav'.format(n_files))
@@ -99,21 +99,19 @@ def write(recording):
 	wf.setnchannels(CHANNELS)
 	wf.setsampwidth(p.get_sample_size(FORMAT))
 	wf.setframerate(RATE)
-	wf.writeframes(recording)
+	wf.writeframes(data["voice_recording"])
 	wf.close()
 
-	
 	sound = AudioSegment.from_file(filename, format="wav")
 
-	start_trim = detect_leading_silence(sound)
-	end_trim = detect_leading_silence(sound.reverse())
+	start_trim = 0
+	end_trim = detect_leading_silence(sound.reverse(), silence_threshold=(data["threshold"]+ 40))
 	print("start silence :", start_trim)
 	print("end silence length:", end_trim)
 	duration = len(sound)    
 	trimmed_sound = sound[start_trim:duration-end_trim]
 	os.remove(filename)
 	trimmed_sound.export(filename, format="wav")
-	
 
 	signal, sr = librosa.load(filename)
 	fig = plt.figure(figsize=[0.72,0.72])
@@ -132,15 +130,15 @@ def write(recording):
 	prediction = learn.predict(spectrofilename)
 	socketIo.emit('predicted_tone', prediction[0])
 	#print("PREDICTION SENT")
-	print(prediction[0])
+	#print(prediction[0])
 
     #print(prediction)
 	#os.remove(filename)
 
 
 @socketIo.on("voice_recorded")
-def handleVoice(voice_sound):
-	write(voice_sound)
+def handleVoice(data):
+	write(data)
 	return None
 
 if __name__ == '__main__':

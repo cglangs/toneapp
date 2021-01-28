@@ -23,37 +23,34 @@ from fastbook import *
 from fastai.vision.all import *
 
 path = "/content/gdrive/MyDrive"
+min_duration = 0.2
 
 def create_spectrograms(): 
-    os.mkdir(path + "/spectrograms")
+    os.mkdir(path + "/spectrograms_2")
     count = 0
     for audio_file in os.listdir(path + "/tone_wav"):
         count += 1
         print(count)
-        samples, sample_rate = librosa.load(path + "/tone_wav/" + audio_file)
-        fig = plt.figure(figsize=[0.72,0.72])
-        ax = fig.add_subplot(111)
-        ax.axes.get_xaxis().set_visible(False)
-        ax.axes.get_yaxis().set_visible(False)
-        ax.set_frame_on(False)
-        filename  = path + "/spectrograms/" + audio_file.replace('.wav','.png')
-        S = librosa.feature.melspectrogram(y=samples, sr=sample_rate)
+        y, sr = librosa.load(path + "/tone_wav/" + audio_file)
+        dur = librosa.get_duration(y=y, sr=sr)
+        y_time = librosa.effects.time_stretch(y, 2)
+        S = librosa.feature.melspectrogram(y=y_time, sr=sr)
         librosa.display.specshow(librosa.power_to_db(S, ref=np.max))
+        filename  = path + "/spectrograms_2/" + audio_file.replace('.wav','.png')
         plt.savefig(filename, dpi=400, bbox_inches='tight',pad_inches=0)
         plt.close('all')
-
 #create_spectrograms()
 
 fnames = [audio_file for audio_file in os.listdir(path + "/spectrograms")]
-labels = [fname.split("_")[0][-1] for fname in fnames]
+labels = [fname.split("_")[-3][-1] for fname in fnames]
 
 df = pd.DataFrame({'fnames':fnames, 'labels':labels})
 def get_x(r): return path + "/spectrograms/" + r['fnames']
 def get_y(r): return r['labels']
 
 def splitter(df):
-    train = df.index[df["fnames"].apply(lambda x: x.split('_')[1]) != "FV3"].tolist()
-    valid = df.index[df["fnames"].apply(lambda x: x.split('_')[1]) == "FV3"].tolist()
+    train = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) != "FV3"].tolist()
+    valid = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) == "FV3"].tolist()
     return train,valid
 
 dblock = DataBlock(blocks=(ImageBlock, CategoryBlock),

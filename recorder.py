@@ -30,15 +30,15 @@ TIMEOUT_LENGTH = 0.05
 f_name_directory = './records'
 
 fnames = [audio_file for audio_file in os.listdir("spectrograms")]
-labels = [fname.split("_")[0][-1] for fname in fnames]
+labels = [fname.split("_")[-3][-1] for fname in fnames]
 
 df = pd.DataFrame({'fnames':fnames, 'labels':labels})
 def get_x(r): return "spectrograms/" + r['fnames']
 def get_y(r): return r['labels']
 
 def splitter(df):
-    train = df.index[df["fnames"].apply(lambda x: x.split('_')[1]) != "FV3"].tolist()
-    valid = df.index[df["fnames"].apply(lambda x: x.split('_')[1]) == "FV3"].tolist()
+    train = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) != "FV3"].tolist()
+    valid = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) == "FV3"].tolist()
     return train,valid
 
 dblock = DataBlock(blocks=(ImageBlock, CategoryBlock),
