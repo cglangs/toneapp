@@ -17,7 +17,7 @@ class App extends Component {
 
 
   state = {
-    threshold_decibels: 79,
+    threshold_decibels: 50,
     harkObject: null,
     voice_present: false,
     recording: false,
@@ -52,7 +52,7 @@ class App extends Component {
         var recorder = _this.initRecorder(stream)
         var options = {threshold: -1 * _this.state.threshold_decibels};//-100 is silence -50 is the default
         var speechEvents = hark(stream, options);
-        
+
         recorder.startRecording();
 
         speechEvents.on('speaking', function() {
@@ -67,7 +67,7 @@ class App extends Component {
           let blob = await recorder.getBlob();
           console.log(_this.state.get_tone)
           if(_this.state.get_tone){
-            socket.emit('voice_recorded', {voice_recording: blob, threshold: -1 * _this.state.threshold_decibels});
+            socket.emit('voice_recorded', {voice_recording: blob, threshold: _this.state.threshold_decibels});
           }
           newAudio.src = URL.createObjectURL(blob)
           speechEvents.stop()
@@ -118,8 +118,8 @@ class App extends Component {
           <p style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginLeft": "5%"}}>{"Get Tone"}</p> 
          </div>
         <label>Mic sensitivity</label>
-        <input type="range" min="50" max="99" disabled={this.state.harkObject == null}value={this.state.threshold_decibels} onChange={this.handleSliderChange}/>
-        <span>{this.state.threshold_decibels - 49 }</span>
+        <input type="range" min="1" max="99" disabled={this.state.harkObject == null}value={this.state.threshold_decibels} onChange={this.handleSliderChange}/>
+        <span>{this.state.threshold_decibels}</span>
         {this.state.voice_present && "Voice heard"}
         </header>
       </div>
