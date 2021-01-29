@@ -17,7 +17,7 @@ class App extends Component {
 
 
   state = {
-    threshold_decibels: 64,
+    threshold_decibels: 79,
     harkObject: null,
     voice_present: false,
     recording: false,
@@ -52,10 +52,11 @@ class App extends Component {
         var recorder = _this.initRecorder(stream)
         var options = {threshold: -1 * _this.state.threshold_decibels};//-100 is silence -50 is the default
         var speechEvents = hark(stream, options);
+        
+        recorder.startRecording();
 
         speechEvents.on('speaking', function() {
           console.log('speaking');
-          recorder.startRecording();
           _this.setState({voice_present: true, predicted_tone: null})
         });
      
@@ -117,7 +118,7 @@ class App extends Component {
           <p style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginLeft": "5%"}}>{"Get Tone"}</p> 
          </div>
         <label>Mic sensitivity</label>
-        <input type="range" min="50" max="79" disabled={this.state.harkObject == null}value={this.state.threshold_decibels} onChange={this.handleSliderChange}/>
+        <input type="range" min="50" max="99" disabled={this.state.harkObject == null}value={this.state.threshold_decibels} onChange={this.handleSliderChange}/>
         <span>{this.state.threshold_decibels - 49 }</span>
         {this.state.voice_present && "Voice heard"}
         </header>

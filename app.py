@@ -38,8 +38,8 @@ def get_x(r): return "spectrograms/" + r['fnames']
 def get_y(r): return r['labels']
 
 def splitter(df):
-    train = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) != "FV3"].tolist()
-    valid = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) == "FV3"].tolist()
+    train = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) != "FV1"].tolist()
+    valid = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) == "FV1"].tolist()
     return train,valid
 
 dblock = DataBlock(blocks=(ImageBlock, CategoryBlock),
@@ -50,7 +50,7 @@ dls = dblock.dataloaders(df)
 
 
 learn=cnn_learner(dls, models.resnet18, metrics=error_rate)
-learn.load('FV3_3epoch_model')
+learn.load('FV1_big_model')
 
 
 app = Flask(__name__)
@@ -71,14 +71,8 @@ RATE = 44100
 f_name_directory = './records'
 p = pyaudio.PyAudio()
 
+'''
 def detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=10):
-    '''
-    sound is a pydub.AudioSegment
-    silence_threshold in dB
-    chunk_size in ms
-
-    iterate over chunks until you find the first one with sound
-    '''
     trim_ms = 0 # ms
 
     assert chunk_size > 0 # to avoid infinite loop
@@ -86,6 +80,7 @@ def detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=10):
     	trim_ms += chunk_size
 
     return trim_ms
+'''
 
 def write(data):
 	#print(recording)
@@ -101,9 +96,8 @@ def write(data):
 	wf.setframerate(RATE)
 	wf.writeframes(data["voice_recording"])
 	wf.close()
-
+	'''
 	sound = AudioSegment.from_file(filename, format="wav")
-
 	start_trim = 0
 	end_trim = detect_leading_silence(sound.reverse(), silence_threshold=(data["threshold"]+ 40))
 	print("start silence :", start_trim)
@@ -112,15 +106,16 @@ def write(data):
 	trimmed_sound = sound[start_trim:duration-end_trim]
 	os.remove(filename)
 	trimmed_sound.export(filename, format="wav")
-
+	'''
 	signal, sr = librosa.load(filename)
+	signal_t, index = librosa.effects.trim(y=signal[100:], top_db=20)
 	fig = plt.figure(figsize=[0.72,0.72])
 	ax = fig.add_subplot(111)
 	ax.axes.get_xaxis().set_visible(False)
 	ax.axes.get_yaxis().set_visible(False)
 	ax.set_frame_on(False)
 	spectrofilename = filename.replace('.wav','.png')
-	S = librosa.feature.melspectrogram(y=signal, sr=sr)
+	S = librosa.feature.melspectrogram(y=signal_t, sr=sr)
 	librosa.display.specshow(librosa.power_to_db(S, ref=np.max))
 	plt.savefig(spectrofilename, dpi=400, bbox_inches='tight',pad_inches=0)
 	plt.close('all')
