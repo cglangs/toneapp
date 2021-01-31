@@ -46,3 +46,15 @@
   background-color: darkgray;
   margin-bottom: 30px;
 }
+
+.String-holder span{
+  width:45px;
+  display: inline-block;
+  text-align: center;
+}
+
+.String-holder mark{
+  width: 45px;
+  display: inline-block;
+  text-align: center;
+}

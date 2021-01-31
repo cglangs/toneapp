@@ -23,13 +23,14 @@ class App extends Component {
     recording: false,
     new_audio: null,
     get_tone: false,
-    predicted_tone: null,
-    tones_recorded: [1,0,3],
+    tones_recorded: [],
+    currentIndex: 0,
+    sentence_finished: false,
     test_sentence: {
       display: "妈妈准备了好吃的东西给我。",
       characters: "妈妈准备了好吃的东西给我",
-      written_tones: "103403101033",
-      spoken_tones: "103403101023",
+      written_tones: "1034_31_1_33",
+      spoken_tones: "1_34_31_1_23",
       english: "Mother prepared something delicious for me.",
       pinyin: "māma zhǔnbèi le hǎochī de dōngxi gěi wǒ"
     }
@@ -48,8 +49,9 @@ class App extends Component {
 
   componentDidMount = () => {
     socket.on('predicted_tone', data => {
-      console.log(data)
-      this.setState({predicted_tone: data})
+      data = this.state.test_sentence.spoken_tones[this.state.currentIndex] === "_" ? "_" : data.toString()
+      const finished = this.state.currentIndex === this.state.test_sentence.spoken_tones.length - 1
+      this.setState(prevState => ({tones_recorded: [...prevState.tones_recorded, data], currentIndex: prevState.currentIndex + 1, sentence_finished: finished}),() => {!finished && this.startRecording()})
     })
   }
 
@@ -102,18 +104,18 @@ class App extends Component {
     }
   }
 
-
-  Highlighted = (text = '', highlightIndex = 0) => {
-     const parts = []
-     parts[0] = text.substring(0,highlightIndex)
-     parts[1] = text.substring(highlightIndex,highlightIndex+1)
-     parts[2] = text.substring(highlightIndex+1,text.length)
-     console.log(parts)
+  diplayString = (text = '', highlighted= false, highlightIndex = 0) => {
+     const parts = text.split('')
      return (
-       <span style={{"letterSpacing": "5px"}}>
-         <span>{parts[0]}</span>
-         <mark>{parts[1]}</mark>
-         <span>{parts[2]}</span> 
+       <span className="String-holder">
+         {parts.map((char,index)=> {
+           if(highlighted && index === highlightIndex){
+             return <mark>{char}</mark>
+           } else{
+             return <span>{char}</span>
+           }
+
+         })}
       </span>
      )
   }
@@ -125,10 +127,10 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
         <audio id="replay"/>
-        <div style={{display: "flex", flexDirection: "column", justifyContent: "left", "textAlign": "left", width: "35%"}}>
-          <span style={{"letterSpacing": "16px", "marginLeft": "5px",}}>{this.state.test_sentence.spoken_tones}</span>
-          {this.Highlighted(this.state.test_sentence.display,0)}
-          <span style={{"letterSpacing": "16px", "marginLeft": "5px"}}>{this.state.tones_recorded}</span>
+        <div style={{display: "flex", flexDirection: "column", justifyContent: "left", "textAlign": "left", width: "45%"}}>
+          {this.state.sentence_finished && this.diplayString(this.state.test_sentence.spoken_tones, false)}
+          {this.diplayString(this.state.test_sentence.display, !this.state.sentence_finished, this.state.currentIndex)}
+          {this.diplayString(this.state.tones_recorded.join(''), false)}
           <label>{this.state.predicted_tone && ("Tone:" + this.state.predicted_tone)}</label>
         </div>
         <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
