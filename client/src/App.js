@@ -23,7 +23,16 @@ class App extends Component {
     recording: false,
     new_audio: null,
     get_tone: false,
-    predicted_tone: null
+    predicted_tone: null,
+    tones_recorded: [1,0,3],
+    test_sentence: {
+      display: "妈妈准备了好吃的东西给我。",
+      characters: "妈妈准备了好吃的东西给我",
+      written_tones: "103403101033",
+      spoken_tones: "103403101023",
+      english: "Mother prepared something delicious for me.",
+      pinyin: "māma zhǔnbèi le hǎochī de dōngxi gěi wǒ"
+    }
   }
 
   initRecorder = (stream, listofBlobs) => {
@@ -80,7 +89,7 @@ class App extends Component {
   }
 
   handleSliderChange = (e) => {
-    this.setState({threshold_decibels: e.target.value}, () => this.state.harkObject.setThreshold(-1 * this.state.threshold_decibels));
+    this.setState({threshold_decibels: e.target.value}, () => this.state.harkObject.setThreshold(this.state.threshold_decibels));
   }
 
   toggleMic = () => {
@@ -93,6 +102,22 @@ class App extends Component {
     }
   }
 
+
+  Highlighted = (text = '', highlightIndex = 0) => {
+     const parts = []
+     parts[0] = text.substring(0,highlightIndex)
+     parts[1] = text.substring(highlightIndex,highlightIndex+1)
+     parts[2] = text.substring(highlightIndex+1,text.length)
+     console.log(parts)
+     return (
+       <span style={{"letterSpacing": "5px"}}>
+         <span>{parts[0]}</span>
+         <mark>{parts[1]}</mark>
+         <span>{parts[2]}</span> 
+      </span>
+     )
+  }
+
   render(){
     //console.log(this.state)
     let btn_class = this.state.recording ? "pressedButton" : "defaultButton";
@@ -100,7 +125,12 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
         <audio id="replay"/>
-        <label>{this.state.predicted_tone && ("Tone:" + this.state.predicted_tone)}</label>
+        <div style={{display: "flex", flexDirection: "column", justifyContent: "left", "textAlign": "left", width: "35%"}}>
+          <span style={{"letterSpacing": "16px", "marginLeft": "5px",}}>{this.state.test_sentence.spoken_tones}</span>
+          {this.Highlighted(this.state.test_sentence.display,0)}
+          <span style={{"letterSpacing": "16px", "marginLeft": "5px"}}>{this.state.tones_recorded}</span>
+          <label>{this.state.predicted_tone && ("Tone:" + this.state.predicted_tone)}</label>
+        </div>
         <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
         <button className={btn_class} onClick={this.startRecording}>
                   {this.state.recording ? "Recording" : "Record"}
