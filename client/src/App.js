@@ -133,8 +133,11 @@ class App extends Component {
         <header className="App-header">
         <audio id="replay"/>
         <div style={{display: "flex", flexDirection: "column", justifyContent: "left", "textAlign": "left", width: "45%"}}>
+          <p style={{"textAlign": "center"}}>{this.state.test_sentence.english}</p>
+          <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
+          {this.state.sentence_finished && <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>}
           {this.state.sentence_finished && this.diplayString(this.state.test_sentence.spoken_tones, false)}
-          {this.diplayString(this.state.test_sentence.display, !this.state.sentence_finished, this.state.currentIndex)}
+          {this.diplayString(this.state.test_sentence.characters, !this.state.sentence_finished, this.state.currentIndex)}
           {this.state.sentence_finished && this.diplayString(this.state.tones_recorded.join(''), false)}
           <label>{this.state.predicted_tone && ("Tone:" + this.state.predicted_tone)}</label>
         </div>
