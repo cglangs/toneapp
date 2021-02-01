@@ -49,9 +49,8 @@ class App extends Component {
 
   componentDidMount = () => {
     socket.on('predicted_tone', data => {
-      data = this.state.test_sentence.spoken_tones[this.state.currentIndex] === "_" ? "_" : data.toString()
-      const finished = this.state.currentIndex === this.state.test_sentence.spoken_tones.length - 1
-      this.setState(prevState => ({tones_recorded: [...prevState.tones_recorded, data], currentIndex: prevState.currentIndex + 1, sentence_finished: finished}),() => {!finished && this.startRecording()})
+      data = this.state.test_sentence.spoken_tones[this.state.currentIndex - 1] === "_" ? "_" : data.toString()
+      this.setState(prevState => ({tones_recorded: [...prevState.tones_recorded, data]}),() => {!this.state.sentence_finished && this.startRecording()})
     })
   }
 
@@ -77,12 +76,18 @@ class App extends Component {
           //recorder.save('audiorecording.wav');
           let blob = await recorder.getBlob();
           console.log(_this.state.get_tone)
-          if(_this.state.get_tone){
-            socket.emit('voice_recorded', {voice_recording: blob, threshold: _this.state.threshold_decibels});
-          }
           newAudio.src = URL.createObjectURL(blob)
           speechEvents.stop()
-          _this.setState({voice_present: false, new_audio: newAudio, recording: false})
+          const finished = _this.state.currentIndex === _this.state.test_sentence.spoken_tones.length - 1
+          if(_this.state.get_tone){
+              _this.setState(prevState => ({voice_present: false, new_audio: newAudio, recording: false, currentIndex: prevState.currentIndex + 1, sentence_finished: finished}), () =>
+            {
+                socket.emit('voice_recorded', {voice_recording: blob, threshold: _this.state.threshold_decibels});
+            })
+          } else{
+            _this.setState({voice_present: false, new_audio: newAudio, recording: false})
+          }
+
           });
 
         });
@@ -130,7 +135,7 @@ class App extends Component {
         <div style={{display: "flex", flexDirection: "column", justifyContent: "left", "textAlign": "left", width: "45%"}}>
           {this.state.sentence_finished && this.diplayString(this.state.test_sentence.spoken_tones, false)}
           {this.diplayString(this.state.test_sentence.display, !this.state.sentence_finished, this.state.currentIndex)}
-          {this.diplayString(this.state.tones_recorded.join(''), false)}
+          {this.state.sentence_finished && this.diplayString(this.state.tones_recorded.join(''), false)}
           <label>{this.state.predicted_tone && ("Tone:" + this.state.predicted_tone)}</label>
         </div>
         <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
