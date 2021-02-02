@@ -123,7 +123,11 @@ def write(data):
 
 
 	prediction = learn.predict(spectrofilename)
-	socketIo.emit('predicted_tone', prediction[0])
+	predictionDict = {}
+	predictionDict["prediction"] = prediction[0]
+	predictionDict["index"] = data["character_index"]
+	print(predictionDict)
+	socketIo.emit('predicted_tone', predictionDict)
 	#print("PREDICTION SENT")
 	#print(prediction[0])
 
