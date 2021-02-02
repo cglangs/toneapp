@@ -26,13 +26,14 @@ class App extends Component {
     tones_recorded: [],
     currentIndex: 0,
     sentence_finished: false,
+    automatic_mode: false,
     test_sentence: {
-      display: "妈妈准备了好吃的东西给我。",
-      characters: "妈妈准备了好吃的东西给我",
-      written_tones: "1034_31_1_33",
-      spoken_tones: "1_34_31_1_23",
-      english: "Mother prepared something delicious for me.",
-      pinyin: "māma zhǔnbèi le hǎochī de dōngxi gěi wǒ"
+      display: "我喜欢他的写作风格，但是不喜欢他的内容。",
+      characters: "我喜欢他的写作风格但是不喜欢他的内容",
+      written_tones: "33_1_34124443_1_42",
+      spoken_tones: "23_1_34124443_1_42",
+      english: "I like the style of his writing but I don't like the content.",
+      pinyin: "wǒ xǐhuan tā de xiězuò fēnggé dànshì bù xǐhuan tā de nèiróng"
     }
   }
 
@@ -50,7 +51,7 @@ class App extends Component {
   componentDidMount = () => {
     socket.on('predicted_tone', data => {
       data = this.state.test_sentence.spoken_tones[this.state.currentIndex - 1] === "_" ? "_" : data.toString()
-      this.setState(prevState => ({tones_recorded: [...prevState.tones_recorded, data]}),() => {!this.state.sentence_finished && this.startRecording()})
+      this.setState(prevState => ({tones_recorded: [...prevState.tones_recorded, data]}),() => {!this.state.sentence_finished && this.state.automatic_mode && this.startRecording()})
     })
   }
 
@@ -78,7 +79,7 @@ class App extends Component {
           console.log(_this.state.get_tone)
           newAudio.src = URL.createObjectURL(blob)
           speechEvents.stop()
-          const finished = _this.state.currentIndex === _this.state.test_sentence.spoken_tones.length - 1
+          const finished = _this.state.tones_recorded.length === _this.state.test_sentence.spoken_tones.length - 1
           if(_this.state.get_tone){
               _this.setState(prevState => ({voice_present: false, new_audio: newAudio, recording: false, currentIndex: prevState.currentIndex + 1, sentence_finished: finished}), () =>
             {
@@ -109,15 +110,21 @@ class App extends Component {
     }
   }
 
+  handleCharClick = (index) => {
+    if(index < this.state.tones_recorded.length){
+      this.setState({currentIndex: index})  
+    }
+  }
+
   diplayString = (text = '', highlighted= false, highlightIndex = 0) => {
      const parts = text.split('')
      return (
        <span className="String-holder">
          {parts.map((char,index)=> {
            if(highlighted && index === highlightIndex){
-             return <mark>{char}</mark>
+             return <mark onClick={() => this.handleCharClick(index)}>{char}</mark>
            } else{
-             return <span>{char}</span>
+             return <span onClick={() => this.handleCharClick(index)}>{char}</span>
            }
 
          })}
@@ -132,13 +139,13 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
         <audio id="replay"/>
-        <div style={{display: "flex", flexDirection: "column", justifyContent: "left", "textAlign": "left", width: "45%"}}>
+        <div style={{display: "flex", flexDirection: "column"}}>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.english}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
           {this.state.sentence_finished && <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>}
           {this.state.sentence_finished && this.diplayString(this.state.test_sentence.spoken_tones, false)}
           {this.diplayString(this.state.test_sentence.characters, !this.state.sentence_finished, this.state.currentIndex)}
-          {this.state.sentence_finished && this.diplayString(this.state.tones_recorded.join(''), false)}
+          {this.diplayString(this.state.tones_recorded.join(''), false)}
           <label>{this.state.predicted_tone && ("Tone:" + this.state.predicted_tone)}</label>
         </div>
         <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>

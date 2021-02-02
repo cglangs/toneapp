@@ -47,8 +47,13 @@
   margin-bottom: 30px;
 }
 
+.String-holder{
+  width:  100%;
+  text-align: left;
+}
+
 .String-holder span{
-  width:45px;
+  width: 45px;
   display: inline-block;
   text-align: center;
 }
