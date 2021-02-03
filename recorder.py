@@ -37,8 +37,8 @@ def get_x(r): return "spectrograms/" + r['fnames']
 def get_y(r): return r['labels']
 
 def splitter(df):
-    train = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) != "FV3"].tolist()
-    valid = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) == "FV3"].tolist()
+    train = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) != "FV1"].tolist()
+    valid = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) == "FV1"].tolist()
     return train,valid
 
 dblock = DataBlock(blocks=(ImageBlock, CategoryBlock),
@@ -49,7 +49,7 @@ dls = dblock.dataloaders(df)
 
 
 learn=cnn_learner(dls, models.resnet18, metrics=error_rate)
-learn.load('FV3_3epoch_model')
+learn.load('FV1_big_model')
 
 class Recorder:
 

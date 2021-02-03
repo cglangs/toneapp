@@ -21,7 +21,7 @@ class App extends Component {
     harkObject: null,
     voice_present: false,
     recording: false,
-    new_audio: null,
+    new_audio: [],
     get_tone: false,
     tones_recorded: [],
     currentIndex: 0,
@@ -60,7 +60,7 @@ class App extends Component {
 
   startRecording = () => {
     let _this = this
-    var newAudio = document.getElementById("replay");
+    var newAudio = document.getElementById("replay-" + _this.state.currentIndex);
     navigator.mediaDevices.getUserMedia({audio: true }).then(async function(stream) {
         var recorder = _this.initRecorder(stream)
         var options = {threshold: -1 * _this.state.threshold_decibels};//-100 is silence -50 is the default
@@ -78,18 +78,21 @@ class App extends Component {
           recorder.stopRecording(async function() {
           //recorder.save('audiorecording.wav');
           let blob = await recorder.getBlob();
-          console.log(_this.state.get_tone)
           newAudio.src = URL.createObjectURL(blob)
           speechEvents.stop()
+
           const finished = _this.state.tones_recorded.length === _this.state.test_sentence.spoken_tones.length - 1
+          const automatic = _this.state.automatic_mode && !finished
           const previousIndex = _this.state.currentIndex
+          const newAudioArray = [..._this.state.new_audio]
+          newAudioArray.splice(_this.state.currentIndex, 1, newAudio)
           if(_this.state.get_tone){
-              _this.setState({voice_present: false, new_audio: newAudio, recording: false, currentIndex: previousIndex + 1, sentence_finished: finished}, () =>
+              _this.setState({voice_present: false, new_audio: newAudioArray, recording: false, currentIndex: previousIndex + 1, sentence_finished: finished, automatic_mode: automatic}, () =>
             {
                 socket.emit('voice_recorded', {voice_recording: blob, character_index: previousIndex, threshold: _this.state.threshold_decibels});
             })
           } else{
-            _this.setState({voice_present: false, new_audio: newAudio, recording: false}, () => {_this.state.new_audio.play()})
+            _this.setState({voice_present: false, new_audio: newAudioArray, recording: false}, () => { _this.state.new_audio[previousIndex].play()})
           }
 
           });
@@ -112,13 +115,13 @@ class App extends Component {
   }
 
   replayAudio = () => {
-    if(this.state.new_audio){
-      this.state.new_audio.play()
+    if(this.state.new_audio.length){
+      this.state.new_audio[this.state.currentIndex].play()
     }
   }
 
   restartSentence = () => {
-    this.setState({currentIndex: 0, tones_recorded: [], sentence_finished: false})
+    this.setState({currentIndex: 0, tones_recorded: [], sentence_finished: false, new_audio: []})
   }
 
   handleCharClick = (index) => {
@@ -150,7 +153,11 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-        <audio id="replay"/>
+        {
+          this.state.test_sentence.characters.split('').map((recording, index)=> {
+            return <audio key={index} id={"replay-" + index}/>
+          })
+        }
         <div style={{display: "flex", flexDirection: "column"}}>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.english}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
@@ -164,7 +171,7 @@ class App extends Component {
         <button className={btn_class} disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.startRecording}>
                   {this.state.recording ? "Recording" : "Record"}
         </button>
-         <button  className="defaultButton" onClick={this.replayAudio}>
+         <button  className="defaultButton" disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.replayAudio}>
                   Replay
         </button>
          <button  className="defaultButton" onClick={this.restartSentence}>
