@@ -18,22 +18,23 @@ class App extends Component {
 
   state = {
     threshold_decibels: 50,
+    recorder: null,
     harkObject: null,
     voice_present: false,
     recording: false,
     new_audio: [],
-    get_tone: false,
+    get_tone: true,
     tones_recorded: [],
     currentIndex: 0,
     sentence_finished: false,
     automatic_mode: false,
     test_sentence: {
-      display: "我喜欢他。",
-      characters: "我喜欢他",
-      written_tones: "33_1",
-      spoken_tones: "23_1",
-      english: "I like him.",
-      pinyin: "wǒ xǐhuan tā"
+      display: "我喜欢在图书馆学习。",
+      characters: "我喜欢在图书馆学习",
+      written_tones: "33_421322",
+      spoken_tones: "23_421322",
+      english: "I like to study in the library.",
+      pinyin: "wǒ xǐhuan zài túshūguǎn xuéxí"
     }
   }
 
@@ -57,6 +58,24 @@ class App extends Component {
     })
   }
 
+  saveRecording = (newAudio, blob) => {
+    newAudio.src = URL.createObjectURL(blob)
+    const finished = this.state.tones_recorded.length === this.state.test_sentence.spoken_tones.length - 1
+    const automatic = this.state.automatic_mode && !finished
+    const previousIndex = this.state.currentIndex
+    const newAudioArray = [...this.state.new_audio]
+    newAudioArray.splice(this.state.currentIndex, 1, newAudio)
+
+    if(this.state.get_tone){
+        this.setState({voice_present: false, new_audio: newAudioArray, recording: false, currentIndex: previousIndex + 1, sentence_finished: finished, automatic_mode: automatic}, () =>
+      {
+          socket.emit('voice_recorded', {voice_recording: blob, character_index: previousIndex, threshold: this.state.threshold_decibels});
+      })
+    } else{
+      this.setState({voice_present: false, new_audio: newAudioArray, recording: false}, () => { this.state.new_audio[previousIndex].play()})
+    }   
+  }
+
 
   startRecording = () => {
     let _this = this
@@ -72,33 +91,25 @@ class App extends Component {
           console.log('speaking');
           _this.setState({voice_present: true, predicted_tone: null})
         });
-     
+
+        /*window.addEventListener('keydown',  (event) => {
+          if (event.keyCode === 39 && _this.state.voice_present && _this.state.get_tone) {
+            console.log("RIGHT ARROW PRESSED")
+            speechEvents.stop()
+          }
+        });*/
+
         speechEvents.on('stopped_speaking', function() {
-          console.log('stopped_speaking');
+          console.log('STOPPED SPEAKING');
           recorder.stopRecording(async function() {
           //recorder.save('audiorecording.wav');
-          let blob = await recorder.getBlob();
-          newAudio.src = URL.createObjectURL(blob)
           speechEvents.stop()
-
-          const finished = _this.state.tones_recorded.length === _this.state.test_sentence.spoken_tones.length - 1
-          const automatic = _this.state.automatic_mode && !finished
-          const previousIndex = _this.state.currentIndex
-          const newAudioArray = [..._this.state.new_audio]
-          newAudioArray.splice(_this.state.currentIndex, 1, newAudio)
-          if(_this.state.get_tone){
-              _this.setState({voice_present: false, new_audio: newAudioArray, recording: false, currentIndex: previousIndex + 1, sentence_finished: finished, automatic_mode: automatic}, () =>
-            {
-                socket.emit('voice_recorded', {voice_recording: blob, character_index: previousIndex, threshold: _this.state.threshold_decibels});
-            })
-          } else{
-            _this.setState({voice_present: false, new_audio: newAudioArray, recording: false}, () => { _this.state.new_audio[previousIndex].play()})
-          }
-
+          let blob = await recorder.getBlob();
+          _this.saveRecording(newAudio,blob)
           });
 
         });
-        _this.setState({harkObject: speechEvents, recording: true})
+        _this.setState({harkObject: speechEvents, recorder: recorder, recording: true})
     });
   }
 
@@ -120,13 +131,13 @@ class App extends Component {
     }
   }
 
+
   restartSentence = () => {
     this.setState({currentIndex: 0, tones_recorded: [], sentence_finished: false, new_audio: []})
   }
 
   handleCharClick = (index) => {
-    console.log(index,this.state.tones_recorded.length)
-    if(index < this.state.tones_recorded.length){
+    if(index <= this.state.tones_recorded.length){
       this.setState({currentIndex: index})  
     }
   }
@@ -145,6 +156,19 @@ class App extends Component {
          })}
       </span>
      )
+  }
+
+  recordingButtonClick = () => {
+    let _this = this
+    if(_this.state.recording){
+      _this.setState({automatic_mode: false, recording: false}, ()=> {
+        _this.state.recorder.stopRecording(async function() {
+          _this.state.harkObject.stop()
+        });
+      })
+    } else{
+      _this.startRecording()
+    }
   }
 
   render(){
@@ -168,10 +192,10 @@ class App extends Component {
           <label>{this.state.predicted_tone && ("Tone:" + this.state.predicted_tone)}</label>
         </div>
         <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
-        <button className={btn_class} disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.startRecording}>
-                  {this.state.recording ? "Recording" : "Record"}
+        <button className={btn_class} disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.recordingButtonClick}>
+                  {this.state.recording ? "Strop Recording" : "Record"}
         </button>
-         <button  className="defaultButton" disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.replayAudio}>
+         <button  className="defaultButton" disabled={this.state.currentIndex >= this.state.tones_recorded.length} onClick={this.replayAudio}>
                   Replay
         </button>
          <button  className="defaultButton" onClick={this.restartSentence}>
@@ -179,6 +203,7 @@ class App extends Component {
         </button>
         </div>
         <div style={{display: "flex", flexDirection: "column", justifyContent: "center", width: "40%"}}>
+          <p>{this.state.voice_present ? "Voice heard" : this.state.recording ?  "Recording..." : ""}</p>
           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
             <p style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginRight": "20px", "width": "50px"}}>{"Test Mic"}</p> 
             <label className="switch">
@@ -199,7 +224,6 @@ class App extends Component {
         <label>Mic sensitivity</label>
         <input type="range" min="1" max="99" disabled={this.state.harkObject == null}value={this.state.threshold_decibels} onChange={this.handleSliderChange}/>
         <span>{this.state.threshold_decibels}</span>
-        {this.state.voice_present && "Voice heard"}
         </header>
       </div>
     );

@@ -134,9 +134,6 @@ class Recorder:
         #print('Written to file: {}'.format(filename))
         #print('Returning to listening')
 
-
-
-
     def listen(self):
         print('Listening beginning')
         while True:
