@@ -60,7 +60,7 @@ class App extends Component {
 
   saveRecording = (newAudio, blob) => {
     newAudio.src = URL.createObjectURL(blob)
-    const finished = this.state.tones_recorded.length === this.state.test_sentence.spoken_tones.length - 1
+    const finished = this.state.tones_recorded.length === this.state.test_sentence.spoken_tones.length - 1 && this.state.currentIndex === this.state.test_sentence.spoken_tones.length - 1
     const automatic = this.state.automatic_mode && !finished
     const previousIndex = this.state.currentIndex
     const newAudioArray = [...this.state.new_audio]
@@ -203,7 +203,7 @@ class App extends Component {
         </button>
         </div>
         <div style={{display: "flex", flexDirection: "column", justifyContent: "center", width: "40%"}}>
-          <p>{this.state.voice_present ? "Voice heard" : this.state.recording ?  "Recording..." : ""}</p>
+          <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.recording ?  "Recording..." : ""}</p>
           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
             <p style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginRight": "20px", "width": "50px"}}>{"Test Mic"}</p> 
             <label className="switch">
