@@ -189,7 +189,6 @@ class Characterbycharacter extends Component {
           {this.state.sentence_finished && this.diplayString(this.state.test_sentence.spoken_tones, false)}
           {this.diplayString(this.state.test_sentence.characters, true, this.state.currentIndex)}
           {this.diplayString(this.state.tones_recorded.join(''), false)}
-          <label>{this.state.predicted_tone && ("Tone:" + this.state.predicted_tone)}</label>
         </div>
         <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
         <button className={btn_class} disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.recordingButtonClick}>
