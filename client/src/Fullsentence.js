@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Howl} from 'howler';
+import {Howl, Howler} from 'howler';
 import hark from 'hark'
 
 //import io from "socket.io-client"
@@ -13,26 +13,26 @@ import './Switch.css';
 //let socket = io.connect(`${endpoint}`)
 class Fullsentence extends Component {
 
-
-  state = {
-    threshold_decibels: 50,
-    recorder: null,
-    harkObject: null,
-    audio_src: null,
-    audio_howler: null,
-    voice_present: false,
-    is_recording: false,
-    is_playing: false,
-    is_paused: false,
-    test_sentence: {
-      display: "我喜欢在图书馆学习。",
-      characters: "我喜欢在图书馆学习",
-      written_tones: "33_421322",
-      spoken_tones: "23_421322",
-      english: "I like to study in the library.",
-      pinyin: "wǒ xǐhuan zài túshūguǎn xuéxí"
-    }
+  constructor(props) {
+    super(props);
+    this.state = {
+      threshold_decibels: 50,
+      recorder: null,
+      harkObject: null,
+      audio_howler: null,
+      voice_present: false,
+      is_recording: false,
+      is_playing: false,
+      is_paused: false,
+      test_sentence: {
+        display: "ABCD"
+      }
+    }    
+    this.audioProgress = React.createRef();
   }
+
+
+
 
   initRecorder = (stream) => {
       let recorder = RecordRTC(stream, {
@@ -74,10 +74,22 @@ class Fullsentence extends Component {
             },
             onend: function(){
               _this.setState({is_playing: false})
-            },           
+            },
+            onload: function(){
+              var audioSlider = document.getElementById("audio-slider");
+              audioSlider.min = 0
+              audioSlider.max = this.duration() * 1000
+              audioSlider.value = 0
+
+            },             
             format:["wav"]
           });
-
+          console.log(sound)
+          console.log(sound.duration())
+          /*var audioSlider = document.getElementById("audio-slider");
+          audioSlider.min = 0
+          audioSlider.max = sound.duration()
+          console.log(sound.duration())*/
           _this.setState({voice_present: false, audio_blob: blob, audio_howler: sound, is_recording: false})
           });
 
@@ -88,7 +100,10 @@ class Fullsentence extends Component {
 
   replayAudio = () => {
     if(this.state.audio_howler != null){
-      this.state.audio_howler.play();
+      console.log(this.audioProgress.current.valueAsNumber)
+      this.state.audio_howler._sprite = {'test': [0,this.audioProgress.current.valueAsNumber]}
+      console.log(this.state.audio_howler)
+      this.state.audio_howler.play('test');
     }
   }
 
@@ -110,6 +125,10 @@ class Fullsentence extends Component {
 
   render(){
     let btn_class = this.state.is_recording ? "pressedButton" : "defaultButton";
+    if(this.audioProgress.current){
+      console.log(this.audioProgress)      
+    }
+
     return (
       <div className="App"> 
         <header className="App-header">
@@ -118,6 +137,7 @@ class Fullsentence extends Component {
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
           <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.is_recording ?  "Recording..." : ""}</p>
+          <input id="audio-slider" ref={this.audioProgress} type="range" />
           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
             <button className={btn_class} onClick={this.startRecording}>
                   {this.state.is_recording ? "Stop Recording" : "Record"}
