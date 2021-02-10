@@ -16,7 +16,7 @@ device = torch.device('cpu')
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
-Threshold = 10
+Threshold = 20
 
 SHORT_NORMALIZE = (1.0/32768.0)
 chunk = 2048
@@ -28,7 +28,7 @@ swidth = 2
 TIMEOUT_LENGTH = 0.05
 
 f_name_directory = './records'
-
+'''
 fnames = [audio_file for audio_file in os.listdir("spectrograms")]
 labels = [fname.split("_")[-3][-1] for fname in fnames]
 
@@ -50,7 +50,7 @@ dls = dblock.dataloaders(df)
 
 learn=cnn_learner(dls, models.resnet18, metrics=error_rate)
 learn.load('FV1_big_model')
-
+'''
 class Recorder:
 
     @staticmethod
@@ -120,7 +120,8 @@ class Recorder:
         plt.close('all')
 
 
-        prediction = learn.predict(spectrofilename)
+
+        #prediction = learn.predict(spectrofilename)
   
         print(prediction)
         rec = AudioSegment.from_wav(filename)

@@ -1,15 +1,16 @@
 import React, { Component } from 'react'
+import {Howl} from 'howler';
 import hark from 'hark'
 
-import io from "socket.io-client"
+//import io from "socket.io-client"
 import RecordRTC from "recordrtc"
 
 import './App.css';
 import './Switch.css';
 
 
-let endpoint = "http://localhost:5000"
-let socket = io.connect(`${endpoint}`)
+//let endpoint = "http://localhost:5000"
+//let socket = io.connect(`${endpoint}`)
 class Fullsentence extends Component {
 
 
@@ -17,9 +18,12 @@ class Fullsentence extends Component {
     threshold_decibels: 50,
     recorder: null,
     harkObject: null,
+    audio_src: null,
+    audio_howler: null,
     voice_present: false,
-    recording: false,
-    new_audio: null,
+    is_recording: false,
+    is_playing: false,
+    is_paused: false,
     test_sentence: {
       display: "我喜欢在图书馆学习。",
       characters: "我喜欢在图书馆学习",
@@ -43,7 +47,6 @@ class Fullsentence extends Component {
 
   startRecording = () => {
     let _this = this
-    var newAudio = document.getElementById("replay");
     navigator.mediaDevices.getUserMedia({audio: true }).then(async function(stream) {
         var recorder = _this.initRecorder(stream)
         var options = {threshold: -1 * _this.state.threshold_decibels};//-100 is silence -50 is the default
@@ -59,47 +62,76 @@ class Fullsentence extends Component {
         speechEvents.on('stopped_speaking', function() {
           console.log('STOPPED SPEAKING');
           recorder.stopRecording(async function() {
-          //recorder.save('audiorecording.wav');
           speechEvents.stop()
-          let blob = await recorder.getBlob();
-          newAudio.src = URL.createObjectURL(blob)
-          _this.setState({voice_present: false, new_audio: newAudio, recording: false})
+          let blob = await recorder.getBlob()
+          var sound = new Howl({
+            src: [URL.createObjectURL(blob)],
+            onplay: function(){
+              _this.setState({is_playing: true, is_paused: false})
+            },
+            onpause: function(){
+              _this.setState({is_playing: false, is_paused: true})
+            },
+            onend: function(){
+              _this.setState({is_playing: false})
+            },           
+            format:["wav"]
+          });
+
+          _this.setState({voice_present: false, audio_blob: blob, audio_howler: sound, is_recording: false})
           });
 
         });
-        _this.setState({harkObject: speechEvents, recorder: recorder, recording: true})
+        _this.setState({harkObject: speechEvents, recorder: recorder, is_recording: true})
     });
   }
 
   replayAudio = () => {
-    if(this.state.new_audio != null){
-      this.state.new_audio.play()
+    if(this.state.audio_howler != null){
+      this.state.audio_howler.play();
+    }
+  }
+
+  pauseAudio = () => {
+    if(this.state.audio_howler != null){
+      this.state.audio_howler.pause();
+    }
+  }
+
+  continueAudio = () => {
+    if(this.state.audio_howler != null){
+      this.state.audio_howler.pause();
     }
   }
 
   restartSentence = () => {
-    this.setState({new_audio: null})
+    this.setState({audio_howler: null})
   }
 
   render(){
-    let btn_class = this.state.recording ? "pressedButton" : "defaultButton";
+    let btn_class = this.state.is_recording ? "pressedButton" : "defaultButton";
     return (
       <div className="App"> 
-        <audio id="replay"/>
         <header className="App-header">
           <div style={{display: "flex", flexDirection: "column"}}>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.english}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
-          <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.recording ?  "Recording..." : ""}</p>
+          <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.is_recording ?  "Recording..." : ""}</p>
           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
             <button className={btn_class} onClick={this.startRecording}>
-                  {this.state.recording ? "Strop Recording" : "Record"}
+                  {this.state.is_recording ? "Stop Recording" : "Record"}
             </button>
-            <button  className="defaultButton" disabled={this.state.new_audio == null} onClick={this.replayAudio}>
+            <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={this.replayAudio}>
                   Replay
             </button>
-             <button  className="defaultButton" disabled={this.state.new_audio == null} onClick={this.restartSentence}>
+            <button  className="defaultButton" disabled={this.state.audio_howler == null || !this.state.is_playing} onClick={this.pauseAudio}>
+                  Pause
+            </button>
+            <button  className="defaultButton" disabled={this.state.audio_howler == null || !this.state.is_paused} onClick={this.replayAudio}>
+                  Continue
+            </button>
+             <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={this.restartSentence}>
                   Restart Sentence
             </button>
         </div>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import Characterbycharacter from './Characterbycharacter'
+//import Characterbycharacter from './Characterbycharacter'
 import Fullsentence from './Fullsentence'
 
 
@@ -11,7 +11,7 @@ class App extends Component {
     const isFull = true
     return(
       <div>
-      {isFull ? <Fullsentence/> : <Characterbycharacter/>}
+      {isFull ? <Fullsentence/> : null}
       </div>
       )
   }
