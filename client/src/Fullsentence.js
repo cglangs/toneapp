@@ -25,10 +25,11 @@ class Fullsentence extends Component {
       is_playing: false,
       is_paused: false,
       test_sentence: {
-        display: "ABCD"
+        display: "1-2-3-4-5-6-7-8-9-10"
       }
     }    
     this.audioProgress = React.createRef();
+    this.requestRef = React.createRef();
   }
 
   initRecorder = (stream) => {
@@ -64,29 +65,23 @@ class Fullsentence extends Component {
           var sound = new Howl({
             src: [URL.createObjectURL(blob)],
             onplay: function(){
-              _this.setState({is_playing: true, is_paused: false})
+              console.log("PLAY")
+              _this.setState({is_paused: false})
             },
             onpause: function(){
-              _this.setState({is_playing: false, is_paused: true})
+              _this.setState({is_playing: false, is_paused: true}, ()=> {cancelAnimationFrame(_this.requestRef.current)})
             },
             onend: function(){
               _this.setState({is_playing: false})
             },
             onload: function(){
-              var audioSlider = document.getElementById("audio-slider");
+              var audioSlider = document.getElementById("audio-slider")
               audioSlider.min = 0
               audioSlider.max = this.duration() * 1000
               audioSlider.value = 0
-
             },             
             format:["wav"]
           });
-          console.log(sound)
-          console.log(sound.duration())
-          /*var audioSlider = document.getElementById("audio-slider");
-          audioSlider.min = 0
-          audioSlider.max = sound.duration()
-          console.log(sound.duration())*/
           _this.setState({voice_present: false, audio_blob: blob, audio_howler: sound, is_recording: false})
           });
 
@@ -97,10 +92,14 @@ class Fullsentence extends Component {
 
   replayAudio = (playAll,isAfter) => {
     if(this.state.audio_howler != null){
+      this.state.audio_howler._sprite = {
+        'before': [0,this.audioProgress.current.valueAsNumber], 
+        'after': [this.audioProgress.current.valueAsNumber, this.audioProgress.current.max - this.audioProgress.current.valueAsNumber],
+        'all': [0,this.audioProgress.current.max]
+      }
       if(playAll){
-        this.state.audio_howler.play()  
+        this.state.audio_howler.play('all')  
       }else{
-        this.state.audio_howler._sprite = {'before': [0,this.audioProgress.current.valueAsNumber], 'after': [this.audioProgress.current.valueAsNumber,this.audioProgress.current.max]}
         if(isAfter){
           this.state.audio_howler.play('after');
         } else{
@@ -120,12 +119,21 @@ class Fullsentence extends Component {
     this.setState({audio_howler: null})
   }
 
+  playWithSlider = () => {
+      let start = Date.now();
+      let audioSlider = document.getElementById("audio-slider")
+      let startPoint = this.audioProgress.current.valueAsNumber
+      this.replayAudio(false, true)
+      let _this = this
+      _this.requestRef.current = requestAnimationFrame(function animateSlider() {
+          let interval = Date.now() - start + startPoint
+          audioSlider.value = interval
+          if (interval < parseInt(audioSlider.max)) _this.requestRef.current = requestAnimationFrame(animateSlider); // queue request for next frame
+      });
+  }
+
   render(){
     let btn_class = this.state.is_recording ? "pressedButton" : "defaultButton";
-    if(this.audioProgress.current){
-      console.log(this.audioProgress)      
-    }
-
     return (
       <div className="App"> 
         <header className="App-header">
@@ -134,22 +142,25 @@ class Fullsentence extends Component {
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
           <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.is_recording ?  "Recording..." : ""}</p>
-          <input id="audio-slider" ref={this.audioProgress} type="range" />
+          {this.state.audio_howler && <input id="audio-slider" ref={this.audioProgress} type="range"/>}
           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
             <button className={btn_class} onClick={this.startRecording}>
                   {this.state.is_recording ? "Stop Recording" : "Record"}
             </button>
-            <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={() => this.replayAudio(true)}>
+            <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={()=> this.setState({is_playing: true}, ()=>{this.playWithSlider()})}>
                   Play
+            </button>
+            <button  className="defaultButton" disabled={this.state.audio_howler == null || !this.state.is_playing} onClick={this.pauseAudio}>
+                  Pause
+            </button>
+            <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={() => this.replayAudio(true, false)}>
+                  Play All
             </button>
             <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={() => this.replayAudio(false, false)}>
                   Play Before
             </button>
             <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={() => this.replayAudio(false, true)}>
                   Play After
-            </button>
-            <button  className="defaultButton" disabled={this.state.audio_howler == null || !this.state.is_playing} onClick={this.pauseAudio}>
-                  Pause
             </button>
              <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={this.restartSentence}>
                   Restart Sentence
