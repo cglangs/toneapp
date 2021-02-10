@@ -31,9 +31,6 @@ class Fullsentence extends Component {
     this.audioProgress = React.createRef();
   }
 
-
-
-
   initRecorder = (stream) => {
       let recorder = RecordRTC(stream, {
       type: 'audio',
@@ -98,22 +95,22 @@ class Fullsentence extends Component {
     });
   }
 
-  replayAudio = () => {
+  replayAudio = (playAll,isAfter) => {
     if(this.state.audio_howler != null){
-      console.log(this.audioProgress.current.valueAsNumber)
-      this.state.audio_howler._sprite = {'test': [0,this.audioProgress.current.valueAsNumber]}
-      console.log(this.state.audio_howler)
-      this.state.audio_howler.play('test');
+      if(playAll){
+        this.state.audio_howler.play()  
+      }else{
+        this.state.audio_howler._sprite = {'before': [0,this.audioProgress.current.valueAsNumber], 'after': [this.audioProgress.current.valueAsNumber,this.audioProgress.current.max]}
+        if(isAfter){
+          this.state.audio_howler.play('after');
+        } else{
+          this.state.audio_howler.play('before');
+        }        
+      }
     }
   }
 
   pauseAudio = () => {
-    if(this.state.audio_howler != null){
-      this.state.audio_howler.pause();
-    }
-  }
-
-  continueAudio = () => {
     if(this.state.audio_howler != null){
       this.state.audio_howler.pause();
     }
@@ -142,14 +139,17 @@ class Fullsentence extends Component {
             <button className={btn_class} onClick={this.startRecording}>
                   {this.state.is_recording ? "Stop Recording" : "Record"}
             </button>
-            <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={this.replayAudio}>
-                  Replay
+            <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={() => this.replayAudio(true)}>
+                  Play
+            </button>
+            <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={() => this.replayAudio(false, false)}>
+                  Play Before
+            </button>
+            <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={() => this.replayAudio(false, true)}>
+                  Play After
             </button>
             <button  className="defaultButton" disabled={this.state.audio_howler == null || !this.state.is_playing} onClick={this.pauseAudio}>
                   Pause
-            </button>
-            <button  className="defaultButton" disabled={this.state.audio_howler == null || !this.state.is_paused} onClick={this.replayAudio}>
-                  Continue
             </button>
              <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={this.restartSentence}>
                   Restart Sentence
