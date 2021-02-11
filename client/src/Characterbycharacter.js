@@ -15,27 +15,29 @@ let endpoint = "http://localhost:5000"
 let socket = io.connect(`${endpoint}`)
 class Characterbycharacter extends Component {
 
-
-  state = {
-    threshold_decibels: 50,
-    recorder: null,
-    harkObject: null,
-    voice_present: false,
-    recording: false,
-    new_audio: [],
-    get_tone: true,
-    tones_recorded: [],
-    currentIndex: 0,
-    sentence_finished: false,
-    automatic_mode: false,
-    test_sentence: {
-      display: "我喜欢在图书馆学习。",
-      characters: "我喜欢在图书馆学习",
-      written_tones: "33_421322",
-      spoken_tones: "23_421322",
-      english: "I like to study in the library.",
-      pinyin: "wǒ xǐhuan zài túshūguǎn xuéxí"
-    }
+  constructor(props) {
+    super(props);
+    this.state = {
+      threshold_decibels: 50,
+      voice_present: false,
+      recording: false,
+      new_audio: [],
+      get_tone: true,
+      tones_recorded: [],
+      currentIndex: 0,
+      sentence_finished: false,
+      automatic_mode: false,
+      test_sentence: {
+        display: "我喜欢在图书馆学习。",
+        characters: "我喜欢在图书馆学习",
+        written_tones: "33_421322",
+        spoken_tones: "23_421322",
+        english: "I like to study in the library.",
+        pinyin: "wǒ xǐhuan zài túshūguǎn xuéxí"
+      }
+    }  
+    this.recorder = null
+    this.speechEvents = null
   }
 
   initRecorder = (stream) => {
@@ -81,13 +83,13 @@ class Characterbycharacter extends Component {
     let _this = this
     var newAudio = document.getElementById("replay-" + _this.state.currentIndex);
     navigator.mediaDevices.getUserMedia({audio: true }).then(async function(stream) {
-        var recorder = _this.initRecorder(stream)
+        _this.recorder = _this.initRecorder(stream)
         var options = {threshold: -1 * _this.state.threshold_decibels};//-100 is silence -50 is the default
-        var speechEvents = hark(stream, options);
+        _this.speechEvents = hark(stream, options);
 
-        recorder.startRecording();
+        _this.recorder.startRecording();
 
-        speechEvents.on('speaking', function() {
+        _this.speechEvents.on('speaking', function() {
           console.log('speaking');
           _this.setState({voice_present: true, predicted_tone: null})
         });
@@ -99,17 +101,16 @@ class Characterbycharacter extends Component {
           }
         });*/
 
-        speechEvents.on('stopped_speaking', function() {
+        _this.speechEvents.on('stopped_speaking', function() {
           console.log('STOPPED SPEAKING');
-          recorder.stopRecording(async function() {
-          //recorder.save('audiorecording.wav');
-          speechEvents.stop()
-          let blob = await recorder.getBlob();
+          _this.recorder.stopRecording(async function() {
+          _this.speechEvents.stop()
+          let blob = await _this.recorder.getBlob();
           _this.saveRecording(newAudio,blob)
           });
 
         });
-        _this.setState({harkObject: speechEvents, recorder: recorder, recording: true})
+        _this.setState({recording: true})
     });
   }
 

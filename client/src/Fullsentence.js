@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
-import {Howl, Howler} from 'howler';
+import {Howl} from 'howler';
 import hark from 'hark'
+import {strings} from './constants'
 
 //import io from "socket.io-client"
 import RecordRTC from "recordrtc"
@@ -17,19 +18,26 @@ class Fullsentence extends Component {
     super(props);
     this.state = {
       threshold_decibels: 50,
-      recorder: null,
-      harkObject: null,
-      audio_howler: null,
+      milliseconds: 0,
       voice_present: false,
       is_recording: false,
       is_playing: false,
       is_paused: false,
+      character_offsets: [],
       test_sentence: {
-        display: "1-2-3-4-5-6-7-8-9-10"
+        display: "你好！",
+        characters: "你好",
+        written_tones: "33",
+        spoken_tones: "23",
+        english: "Hello!",
+        pinyin: "nǐ hǎo"
       }
     }    
     this.audioProgress = React.createRef();
     this.requestRef = React.createRef();
+    this.howler = null
+    this.recorder = null
+    this.speechEvents = null
   }
 
   initRecorder = (stream) => {
@@ -46,33 +54,33 @@ class Fullsentence extends Component {
   startRecording = () => {
     let _this = this
     navigator.mediaDevices.getUserMedia({audio: true }).then(async function(stream) {
-        var recorder = _this.initRecorder(stream)
+        _this.recorder = _this.initRecorder(stream)
         var options = {threshold: -1 * _this.state.threshold_decibels};//-100 is silence -50 is the default
-        var speechEvents = hark(stream, options);
+        _this.speechEvents = hark(stream, options);
 
-        recorder.startRecording();
+        _this.recorder.startRecording();
 
-        speechEvents.on('speaking', function() {
+        _this.speechEvents.on('speaking', function() {
           console.log('speaking');
           _this.setState({voice_present: true, predicted_tone: null})
         });
 
-        speechEvents.on('stopped_speaking', function() {
+        _this.speechEvents.on('stopped_speaking', function() {
           console.log('STOPPED SPEAKING');
-          recorder.stopRecording(async function() {
-          speechEvents.stop()
-          let blob = await recorder.getBlob()
-          var sound = new Howl({
+          _this.recorder.stopRecording(async function() {
+          _this.speechEvents.stop()
+          let blob = await _this.recorder.getBlob()
+          _this.howler = new Howl({
             src: [URL.createObjectURL(blob)],
             onplay: function(){
               console.log("PLAY")
-              _this.setState({is_paused: false})
+              _this.setState({is_paused: false, milliseconds: 0})
             },
             onpause: function(){
-              _this.setState({is_playing: false, is_paused: true}, ()=> {cancelAnimationFrame(_this.requestRef.current)})
+              _this.setState({is_playing: false, is_paused: true, milliseconds: _this.audioProgress.current.valueAsNumber}, ()=> {cancelAnimationFrame(_this.requestRef.current)})
             },
             onend: function(){
-              _this.setState({is_playing: false})
+              _this.setState({is_playing: false, milliseconds: _this.audioProgress.current.valueAsNumber})
             },
             onload: function(){
               var audioSlider = document.getElementById("audio-slider")
@@ -82,48 +90,49 @@ class Fullsentence extends Component {
             },             
             format:["wav"]
           });
-          _this.setState({voice_present: false, audio_blob: blob, audio_howler: sound, is_recording: false})
+          _this.setState({voice_present: false, audio_blob: blob, is_recording: false})
           });
 
         });
-        _this.setState({harkObject: speechEvents, recorder: recorder, is_recording: true})
+        _this.setState({is_recording: true})
     });
   }
 
-  replayAudio = (playAll,isAfter) => {
-    if(this.state.audio_howler != null){
-      this.state.audio_howler._sprite = {
-        'before': [0,this.audioProgress.current.valueAsNumber], 
-        'after': [this.audioProgress.current.valueAsNumber, this.audioProgress.current.max - this.audioProgress.current.valueAsNumber],
-        'all': [0,this.audioProgress.current.max]
-      }
-      if(playAll){
-        this.state.audio_howler.play('all')  
-      }else{
-        if(isAfter){
-          this.state.audio_howler.play('after');
-        } else{
-          this.state.audio_howler.play('before');
-        }        
-      }
+  setSprites = (minValue, currentValue, maxValue) => {
+     this.howler._sprite = {
+      "before" : [minValue, currentValue-minValue], 
+      "after" : [currentValue, maxValue-currentValue],
+      "all" : [minValue, maxValue-minValue]
+    }
+  }
+
+  replayAudio = (spriteName) => {
+    if(this.howler != null){
+      const minimum = this.state.character_offsets.length ? this.state.character_offsets[this.state.character_offsets.length -1] : 0
+      const maximum = parseInt(this.audioProgress.current.max)
+      const currentValue = parseInt(this.audioProgress.current.valueAsNumber)
+      console.log(minimum, currentValue, maximum)
+      this.setSprites(minimum, currentValue, maximum)
+      console.log(spriteName)
+      this.howler.play(spriteName)
     }
   }
 
   pauseAudio = () => {
-    if(this.state.audio_howler != null){
-      this.state.audio_howler.pause();
+    if(this.howler != null){
+      this.howler.pause();
     }
   }
 
   restartSentence = () => {
-    this.setState({audio_howler: null})
+    this.setState({ milliseconds: 0}, () => {this.howler = null})
   }
 
   playWithSlider = () => {
       let start = Date.now();
       let audioSlider = document.getElementById("audio-slider")
       let startPoint = this.audioProgress.current.valueAsNumber
-      this.replayAudio(false, true)
+      this.replayAudio(strings.AFTER)
       let _this = this
       _this.requestRef.current = requestAnimationFrame(function animateSlider() {
           let interval = Date.now() - start + startPoint
@@ -132,8 +141,26 @@ class Fullsentence extends Component {
       });
   }
 
+  updateTime = () => {
+    this.setState({milliseconds: this.audioProgress.current.valueAsNumber})
+  }
+
+  removeLeft = () => {
+    this.setSprites(parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.max))
+    var audioSlider = document.getElementById("audio-slider")
+    audioSlider.max = this.audioProgress.current.max
+    audioSlider.min = this.audioProgress.current.valueAsNumber
+    audioSlider.value = this.audioProgress.current.valueAsNumber
+    this.setState(prevState => ({character_offsets: [...prevState.character_offsets, parseInt(this.audioProgress.current.valueAsNumber)]}))
+  }
+
   render(){
-    let btn_class = this.state.is_recording ? "pressedButton" : "defaultButton";
+    const btn_class = this.state.is_recording ? "pressedButton" : "defaultButton";
+    const btns_disabled = this.howler == null
+    console.log(this.state)
+    if(this.howler){
+      console.log(this.howler._sprite)
+    }
     return (
       <div className="App"> 
         <header className="App-header">
@@ -142,27 +169,31 @@ class Fullsentence extends Component {
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
           <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.is_recording ?  "Recording..." : ""}</p>
-          {this.state.audio_howler && <input id="audio-slider" ref={this.audioProgress} type="range"/>}
+          <p style={{"height": "25px"}}>{this.state.milliseconds ? (this.state.milliseconds/1000) + " Seconds" : null}</p>
+          {this.howler && <input id="audio-slider" ref={this.audioProgress} type="range" onChange={this.updateTime} />}
           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
             <button className={btn_class} onClick={this.startRecording}>
                   {this.state.is_recording ? "Stop Recording" : "Record"}
             </button>
-            <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={()=> this.setState({is_playing: true}, ()=>{this.playWithSlider()})}>
+            <button  className="defaultButton" disabled={btns_disabled} onClick={this.removeLeft}>
+                  Remove Left
+            </button>
+            <button  className="defaultButton" disabled={btns_disabled} onClick={()=> this.setState({is_playing: true}, ()=>{this.playWithSlider()})}>
                   Play
             </button>
-            <button  className="defaultButton" disabled={this.state.audio_howler == null || !this.state.is_playing} onClick={this.pauseAudio}>
+            <button  className="defaultButton" disabled={btns_disabled || !this.state.is_playing} onClick={this.pauseAudio}>
                   Pause
             </button>
-            <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={() => this.replayAudio(true, false)}>
+            <button  className="defaultButton" disabled={btns_disabled} onClick={() => this.replayAudio(strings.ALL)}>
                   Play All
             </button>
-            <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={() => this.replayAudio(false, false)}>
+            <button  className="defaultButton" disabled={btns_disabled} onClick={() => this.replayAudio(strings.BEFORE)}>
                   Play Before
             </button>
-            <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={() => this.replayAudio(false, true)}>
+            <button  className="defaultButton" disabled={btns_disabled} onClick={() => this.replayAudio(strings.AFTER)}>
                   Play After
             </button>
-             <button  className="defaultButton" disabled={this.state.audio_howler == null} onClick={this.restartSentence}>
+             <button  className="defaultButton" disabled={btns_disabled} onClick={this.restartSentence}>
                   Restart Sentence
             </button>
         </div>
