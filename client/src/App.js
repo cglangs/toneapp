@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-//import Characterbycharacter from './Characterbycharacter'
+import Characterbycharacter from './Characterbycharacter'
 import Fullsentence from './Fullsentence'
 
 

@@ -8,3 +8,4 @@ node_modules
 get_duration.py
 test.py
 test_spectrograms
+phrases.tsv

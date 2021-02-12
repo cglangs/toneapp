@@ -134,6 +134,7 @@ def write(data):
 
 @socketIo.on("voice_recorded")
 def handleVoice(data):
+	print(data)
 	write(data)
 	return None
 

@@ -3,15 +3,15 @@ import {Howl} from 'howler';
 import hark from 'hark'
 import {strings} from './constants'
 
-//import io from "socket.io-client"
+import io from "socket.io-client"
 import RecordRTC from "recordrtc"
 
 import './App.css';
 import './Switch.css';
 
 
-//let endpoint = "http://localhost:5000"
-//let socket = io.connect(`${endpoint}`)
+let endpoint = "http://localhost:5000"
+let socket = io.connect(`${endpoint}`)
 class Fullsentence extends Component {
 
   constructor(props) {
@@ -39,7 +39,7 @@ class Fullsentence extends Component {
     this.howler = null
     this.recorder = null
     this.speechEvents = null
-    this.audioBuffer = null
+    this.arrayBuffer = null
   }
 
   initRecorder = (stream) => {
@@ -72,7 +72,9 @@ class Fullsentence extends Component {
           _this.recorder.stopRecording(async function() {
           _this.speechEvents.stop()
           let blob = await _this.recorder.getBlob()
-          _this.convertBlobtoAudioBuffer(blob)
+          let arrayBuffer = await blob.arrayBuffer()
+          console.log(blob)
+          _this.arrayBuffer = arrayBuffer
           _this.howler = new Howl({
             src: [URL.createObjectURL(blob)],
             onplay: function(){
@@ -158,27 +160,14 @@ class Fullsentence extends Component {
     this.setState(prevState => ({character_offsets: [...prevState.character_offsets, parseInt(this.audioProgress.current.valueAsNumber)]}))
   }
 
-  convertBlobtoAudioBuffer = (blob) => {
+  testAudioBuffer = () => {
     const audioContext = new AudioContext()
-    const fileReader = new FileReader()
-    var _this = this
-
-    // Set up file reader on loaded end event
-    fileReader.onloadend = () => {
-        const arrayBuffer = fileReader.result 
-        // Convert array buffer into audio buffer
-        audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
-          // Do something with audioBuffer
-          _this.audioBuffer = audioBuffer
-        })
-    }
-    //Load blob
-    fileReader.readAsArrayBuffer(blob)
-  }
-
-  testFunc = () => {
-      var anotherArray = new Float32Array(this.audioBuffer.length);
-      this.audioBuffer.copyFromChannel(anotherArray, 0, 0)
+    let sourceArray = new Float32Array(this.arrayBuffer)
+    let myAudioBuffer = audioContext.createBuffer(1, 44100 * this.howler.duration(), 44100);
+    myAudioBuffer.copyToChannel(sourceArray, 0, 0)
+    var destinationArray = new Float32Array(sourceArray.length)
+    myAudioBuffer.copyFromChannel(destinationArray, 0, 0);
+    socket.emit('voice_recorded', {voice_recording: destinationArray, character_index: 0, threshold: this.state.threshold_decibels})
   }
 
   render(){
@@ -188,6 +177,7 @@ class Fullsentence extends Component {
     return (
       <div className="App"> 
         <header className="App-header">
+          <audio id="replay" autoPlay/>
           <div style={{display: "flex", flexDirection: "column"}}>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.english}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>
@@ -199,7 +189,7 @@ class Fullsentence extends Component {
             <button className={btn_class} onClick={this.startRecording}>
                   {this.state.is_recording ? "Stop Recording" : "Record"}
             </button>
-            <button  className="defaultButton" disabled={btns_disabled} onClick={this.testFunc}>
+            <button  className="defaultButton" disabled={btns_disabled} onClick={this.testAudioBuffer}>
                   Test
             </button>
             <button  className="defaultButton" disabled={btns_disabled} onClick={this.removeLeft}>
