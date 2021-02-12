@@ -24,13 +24,14 @@ class Fullsentence extends Component {
       is_playing: false,
       is_paused: false,
       character_offsets: [],
+      audio_blobs: [],
       test_sentence: {
-        display: "你好！",
-        characters: "你好",
-        written_tones: "33",
-        spoken_tones: "23",
-        english: "Hello!",
-        pinyin: "nǐ hǎo"
+        display: "你",
+        characters: "你",
+        written_tones: "3",
+        spoken_tones: "3",
+        english: "you",
+        pinyin: "nǐ"
       }
     }    
     this.audioProgress = React.createRef();
@@ -38,6 +39,7 @@ class Fullsentence extends Component {
     this.howler = null
     this.recorder = null
     this.speechEvents = null
+    this.audioBuffer = null
   }
 
   initRecorder = (stream) => {
@@ -70,6 +72,7 @@ class Fullsentence extends Component {
           _this.recorder.stopRecording(async function() {
           _this.speechEvents.stop()
           let blob = await _this.recorder.getBlob()
+          _this.convertBlobtoAudioBuffer(blob)
           _this.howler = new Howl({
             src: [URL.createObjectURL(blob)],
             onplay: function(){
@@ -108,10 +111,11 @@ class Fullsentence extends Component {
 
   replayAudio = (spriteName) => {
     if(this.howler != null){
+
       const minimum = this.state.character_offsets.length ? this.state.character_offsets[this.state.character_offsets.length -1] : 0
       const maximum = parseInt(this.audioProgress.current.max)
       const currentValue = parseInt(this.audioProgress.current.valueAsNumber)
-      console.log(minimum, currentValue, maximum)
+
       this.setSprites(minimum, currentValue, maximum)
       console.log(spriteName)
       this.howler.play(spriteName)
@@ -154,13 +158,33 @@ class Fullsentence extends Component {
     this.setState(prevState => ({character_offsets: [...prevState.character_offsets, parseInt(this.audioProgress.current.valueAsNumber)]}))
   }
 
+  convertBlobtoAudioBuffer = (blob) => {
+    const audioContext = new AudioContext()
+    const fileReader = new FileReader()
+    var _this = this
+
+    // Set up file reader on loaded end event
+    fileReader.onloadend = () => {
+        const arrayBuffer = fileReader.result 
+        // Convert array buffer into audio buffer
+        audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
+          // Do something with audioBuffer
+          _this.audioBuffer = audioBuffer
+        })
+    }
+    //Load blob
+    fileReader.readAsArrayBuffer(blob)
+  }
+
+  testFunc = () => {
+      var anotherArray = new Float32Array(this.audioBuffer.length);
+      this.audioBuffer.copyFromChannel(anotherArray, 0, 0)
+  }
+
   render(){
     const btn_class = this.state.is_recording ? "pressedButton" : "defaultButton";
     const btns_disabled = this.howler == null
     console.log(this.state)
-    if(this.howler){
-      console.log(this.howler._sprite)
-    }
     return (
       <div className="App"> 
         <header className="App-header">
@@ -174,6 +198,9 @@ class Fullsentence extends Component {
           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
             <button className={btn_class} onClick={this.startRecording}>
                   {this.state.is_recording ? "Stop Recording" : "Record"}
+            </button>
+            <button  className="defaultButton" disabled={btns_disabled} onClick={this.testFunc}>
+                  Test
             </button>
             <button  className="defaultButton" disabled={btns_disabled} onClick={this.removeLeft}>
                   Remove Left
