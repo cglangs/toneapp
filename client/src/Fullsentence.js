@@ -47,8 +47,7 @@ class Fullsentence extends Component {
    componentDidMount = () => {
     socket.on('predicted_tone', data => {
       const prediction = this.state.test_sentence.spoken_tones[data["index"]] === "_" ? "_" : data["prediction"].toString()
-      const newToneArray = [...this.state.tones_recorded]
-      newToneArray.splice(data["index"], 1, prediction)
+      const newToneArray = [...this.state.tones_recorded, prediction]
       this.setState({tones_recorded: newToneArray})
     })
   }
@@ -176,15 +175,24 @@ class Fullsentence extends Component {
     let myAudioBuffer = audioContext.createBuffer(1, 44100 * this.howler.duration(), 44100);
     myAudioBuffer.copyToChannel(sourceArray, 0, 0) 
     let _this = this
-    audioBufferSlice(myAudioBuffer, 0, _this.howler.duration() * 1000, function(error, slicedAudioBuffer) {
+    let max = this.state.tones_recorded.length == this.state.test_sentence.spoken_tones.length - 1 ? this.audioProgress.current.max : this.audioProgress.current.valueAsNumber
+    console.log(max)
+    audioBufferSlice(myAudioBuffer, this.audioProgress.current.min, max, function(error, slicedAudioBuffer) {
     if (error) {
       console.error(error);
     } else {
-      var destinationArray = new Float32Array(sourceArray.length)
-      slicedAudioBuffer.copyFromChannel(destinationArray, 0, 0)
+      //var destinationArray = new Float32Array(_this.arrayBuffer.length)
+      //slicedAudioBuffer.copyFromChannel(destinationArray, 0, 0)
+      var destinationArray = slicedAudioBuffer.getChannelData(0)
       socket.emit('voice_recorded', {voice_recording: destinationArray, character_index: 0, threshold: _this.state.threshold_decibels})    
     }
     });
+    this.setSprites(parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.max))
+    var audioSlider = document.getElementById("audio-slider")
+    audioSlider.max = this.audioProgress.current.max
+    audioSlider.min = this.audioProgress.current.valueAsNumber
+    audioSlider.value = this.audioProgress.current.valueAsNumber
+    this.setState(prevState => ({character_offsets: [...prevState.character_offsets, parseInt(this.audioProgress.current.valueAsNumber)]}))
 
     // This is the AudioNode to use when we want to play an AudioBuffer
     /*var source = audioContext.createBufferSource();
@@ -223,7 +231,7 @@ class Fullsentence extends Component {
             <button className={btn_class} onClick={this.startRecording}>
                   {this.state.is_recording ? "Stop Recording" : "Record"}
             </button>
-            <button  className="defaultButton" disabled={btns_disabled} onClick={this.testAudioBuffer}>
+            <button  className="defaultButton" disabled={btns_disabled || (this.audioProgress.current && this.audioProgress.current.valueAsNumber == 0)} onClick={this.testAudioBuffer}>
                   Test
             </button>
             <button  className="defaultButton" disabled={btns_disabled} onClick={this.removeLeft}>
