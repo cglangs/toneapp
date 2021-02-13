@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import {Howl} from 'howler';
+import audioBufferSlice from 'audiobuffer-slice'
+
 import hark from 'hark'
 import {strings} from './constants'
 
@@ -24,14 +26,14 @@ class Fullsentence extends Component {
       is_playing: false,
       is_paused: false,
       character_offsets: [],
-      audio_blobs: [],
+      tones_recorded: [],
       test_sentence: {
-        display: "你",
-        characters: "你",
-        written_tones: "3",
-        spoken_tones: "3",
-        english: "you",
-        pinyin: "nǐ"
+        display: "你好！",
+        characters: "你好",
+        written_tones: "23",
+        spoken_tones: "23",
+        english: "Hello!",
+        pinyin: "nǐ hǎo"
       }
     }    
     this.audioProgress = React.createRef();
@@ -40,6 +42,15 @@ class Fullsentence extends Component {
     this.recorder = null
     this.speechEvents = null
     this.arrayBuffer = null
+  }
+
+   componentDidMount = () => {
+    socket.on('predicted_tone', data => {
+      const prediction = this.state.test_sentence.spoken_tones[data["index"]] === "_" ? "_" : data["prediction"].toString()
+      const newToneArray = [...this.state.tones_recorded]
+      newToneArray.splice(data["index"], 1, prediction)
+      this.setState({tones_recorded: newToneArray})
+    })
   }
 
   initRecorder = (stream) => {
@@ -73,7 +84,6 @@ class Fullsentence extends Component {
           _this.speechEvents.stop()
           let blob = await _this.recorder.getBlob()
           let arrayBuffer = await blob.arrayBuffer()
-          console.log(blob)
           _this.arrayBuffer = arrayBuffer
           _this.howler = new Howl({
             src: [URL.createObjectURL(blob)],
@@ -164,10 +174,34 @@ class Fullsentence extends Component {
     const audioContext = new AudioContext()
     let sourceArray = new Float32Array(this.arrayBuffer)
     let myAudioBuffer = audioContext.createBuffer(1, 44100 * this.howler.duration(), 44100);
-    myAudioBuffer.copyToChannel(sourceArray, 0, 0)
-    var destinationArray = new Float32Array(sourceArray.length)
-    myAudioBuffer.copyFromChannel(destinationArray, 0, 0);
-    socket.emit('voice_recorded', {voice_recording: destinationArray, character_index: 0, threshold: this.state.threshold_decibels})
+    myAudioBuffer.copyToChannel(sourceArray, 0, 0) 
+    let _this = this
+    audioBufferSlice(myAudioBuffer, 0, _this.howler.duration() * 1000, function(error, slicedAudioBuffer) {
+    if (error) {
+      console.error(error);
+    } else {
+      var destinationArray = new Float32Array(sourceArray.length)
+      slicedAudioBuffer.copyFromChannel(destinationArray, 0, 0)
+      socket.emit('voice_recorded', {voice_recording: destinationArray, character_index: 0, threshold: _this.state.threshold_decibels})    
+    }
+    });
+
+    // This is the AudioNode to use when we want to play an AudioBuffer
+    /*var source = audioContext.createBufferSource();
+
+    // set the buffer in the AudioBufferSourceNode
+    source.buffer = myAudioBuffer;
+
+    // connect the AudioBufferSourceNode to the
+    // destination so we can hear the sound
+    source.connect(audioContext.destination);
+
+    // start the source playing
+    source.start();*/
+    /*let newAudio = document.getElementById("replay")
+    newAudio.src = URL.createObjectURL(new Blob(destinationArray, {type: "audio/wav"}))
+    newAudio.play()*/
+    
   }
 
   render(){
@@ -177,7 +211,7 @@ class Fullsentence extends Component {
     return (
       <div className="App"> 
         <header className="App-header">
-          <audio id="replay" autoPlay/>
+          <audio id="replay"/>
           <div style={{display: "flex", flexDirection: "column"}}>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.english}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>

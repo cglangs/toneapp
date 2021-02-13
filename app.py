@@ -105,6 +105,8 @@ def write(data):
 	os.remove(filename)
 	trimmed_sound.export(filename, format="wav")
 	'''
+	rec = AudioSegment.from_wav(filename)
+	play(rec)
 	signal, sr = librosa.load(filename)
 	signal_t, index = librosa.effects.trim(y=signal[100:], top_db=20)
 	fig = plt.figure(figsize=[0.72,0.72])
