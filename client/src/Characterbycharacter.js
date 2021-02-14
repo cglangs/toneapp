@@ -71,7 +71,7 @@ class Characterbycharacter extends Component {
     if(this.state.get_tone){
         this.setState({voice_present: false, new_audio: newAudioArray, recording: false, currentIndex: previousIndex + 1, sentence_finished: finished, automatic_mode: automatic}, () =>
       {
-          socket.emit('voice_recorded', {voice_recording: blob, character_index: previousIndex, threshold: this.state.threshold_decibels});
+          socket.emit('tone_recorded', {voice_recording: blob, character_index: previousIndex, threshold: this.state.threshold_decibels});
       })
     } else{
       this.setState({voice_present: false, new_audio: newAudioArray, recording: false}, () => { this.state.new_audio[previousIndex].play()})

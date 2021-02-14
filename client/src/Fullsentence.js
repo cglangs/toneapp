@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import {Howl} from 'howler';
-import audioBufferSlice from 'audiobuffer-slice'
 
 import hark from 'hark'
 import {strings} from './constants'
@@ -28,12 +27,12 @@ class Fullsentence extends Component {
       character_offsets: [],
       tones_recorded: [],
       test_sentence: {
-        display: "你好！",
-        characters: "你好",
-        written_tones: "23",
-        spoken_tones: "23",
-        english: "Hello!",
-        pinyin: "nǐ hǎo"
+        display: "1-2-3-4-5",
+        characters: "",
+        written_tones: "",
+        spoken_tones: "",
+        english: "",
+        pinyin: ""
       }
     }    
     this.audioProgress = React.createRef();
@@ -41,15 +40,15 @@ class Fullsentence extends Component {
     this.howler = null
     this.recorder = null
     this.speechEvents = null
-    this.arrayBuffer = null
+    //this.arrayBuffer = null
   }
 
    componentDidMount = () => {
-    socket.on('predicted_tone', data => {
+    /*socket.on('predicted_tone', data => {
       const prediction = this.state.test_sentence.spoken_tones[data["index"]] === "_" ? "_" : data["prediction"].toString()
       const newToneArray = [...this.state.tones_recorded, prediction]
       this.setState({tones_recorded: newToneArray})
-    })
+    })*/
   }
 
   initRecorder = (stream) => {
@@ -74,7 +73,7 @@ class Fullsentence extends Component {
 
         _this.speechEvents.on('speaking', function() {
           console.log('speaking');
-          _this.setState({voice_present: true, predicted_tone: null})
+          _this.setState({voice_present: true})
         });
 
         _this.speechEvents.on('stopped_speaking', function() {
@@ -82,8 +81,9 @@ class Fullsentence extends Component {
           _this.recorder.stopRecording(async function() {
           _this.speechEvents.stop()
           let blob = await _this.recorder.getBlob()
-          let arrayBuffer = await blob.arrayBuffer()
-          _this.arrayBuffer = arrayBuffer
+          //let arrayBuffer = await blob.arrayBuffer()
+          //_this.arrayBuffer = arrayBuffer
+          socket.emit('phrase_recorded', {voice_recording: blob});
           _this.howler = new Howl({
             src: [URL.createObjectURL(blob)],
             onplay: function(){
@@ -161,55 +161,13 @@ class Fullsentence extends Component {
   }
 
   removeLeft = () => {
+    socket.emit('cut_phrase', {begin: parseInt(this.audioProgress.current.min), end: this.audioProgress.current.valueAsNumber});
     this.setSprites(parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.max))
     var audioSlider = document.getElementById("audio-slider")
     audioSlider.max = this.audioProgress.current.max
     audioSlider.min = this.audioProgress.current.valueAsNumber
     audioSlider.value = this.audioProgress.current.valueAsNumber
     this.setState(prevState => ({character_offsets: [...prevState.character_offsets, parseInt(this.audioProgress.current.valueAsNumber)]}))
-  }
-
-  testAudioBuffer = () => {
-    const audioContext = new AudioContext()
-    let sourceArray = new Float32Array(this.arrayBuffer)
-    let myAudioBuffer = audioContext.createBuffer(1, 44100 * this.howler.duration(), 44100);
-    myAudioBuffer.copyToChannel(sourceArray, 0, 0) 
-    let _this = this
-    let max = this.state.tones_recorded.length == this.state.test_sentence.spoken_tones.length - 1 ? this.audioProgress.current.max : this.audioProgress.current.valueAsNumber
-    console.log(max)
-    audioBufferSlice(myAudioBuffer, this.audioProgress.current.min, max, function(error, slicedAudioBuffer) {
-    if (error) {
-      console.error(error);
-    } else {
-      //var destinationArray = new Float32Array(_this.arrayBuffer.length)
-      //slicedAudioBuffer.copyFromChannel(destinationArray, 0, 0)
-      var destinationArray = slicedAudioBuffer.getChannelData(0)
-      socket.emit('voice_recorded', {voice_recording: destinationArray, character_index: 0, threshold: _this.state.threshold_decibels})    
-    }
-    });
-    this.setSprites(parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.max))
-    var audioSlider = document.getElementById("audio-slider")
-    audioSlider.max = this.audioProgress.current.max
-    audioSlider.min = this.audioProgress.current.valueAsNumber
-    audioSlider.value = this.audioProgress.current.valueAsNumber
-    this.setState(prevState => ({character_offsets: [...prevState.character_offsets, parseInt(this.audioProgress.current.valueAsNumber)]}))
-
-    // This is the AudioNode to use when we want to play an AudioBuffer
-    /*var source = audioContext.createBufferSource();
-
-    // set the buffer in the AudioBufferSourceNode
-    source.buffer = myAudioBuffer;
-
-    // connect the AudioBufferSourceNode to the
-    // destination so we can hear the sound
-    source.connect(audioContext.destination);
-
-    // start the source playing
-    source.start();*/
-    /*let newAudio = document.getElementById("replay")
-    newAudio.src = URL.createObjectURL(new Blob(destinationArray, {type: "audio/wav"}))
-    newAudio.play()*/
-    
   }
 
   render(){
@@ -230,9 +188,6 @@ class Fullsentence extends Component {
           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
             <button className={btn_class} onClick={this.startRecording}>
                   {this.state.is_recording ? "Stop Recording" : "Record"}
-            </button>
-            <button  className="defaultButton" disabled={btns_disabled || (this.audioProgress.current && this.audioProgress.current.valueAsNumber == 0)} onClick={this.testAudioBuffer}>
-                  Test
             </button>
             <button  className="defaultButton" disabled={btns_disabled} onClick={this.removeLeft}>
                   Remove Left
