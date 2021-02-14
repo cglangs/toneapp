@@ -117,10 +117,14 @@ def save_phrase(data):
 	play(rec)
 
 def cut_phrase(data):
-	filename = 'full_recording.wav'
-	newAudio = AudioSegment.from_wav(filename)
+	source_filename = 'full_recording.wav'
+	newAudio = AudioSegment.from_wav(source_filename)
 	newAudio = newAudio[data["begin"]:data["end"]]
-	play(newAudio)
+	n_files = len(os.listdir(f_name_directory))
+	filename = os.path.join(f_name_directory, '{}.wav'.format(n_files))
+	newAudio.export(filename, format="wav")
+	getTone(filename, data["character_index"])
+
 
 
 @socketIo.on("tone_recorded")

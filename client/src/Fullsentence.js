@@ -27,8 +27,8 @@ class Fullsentence extends Component {
       character_offsets: [],
       tones_recorded: [],
       test_sentence: {
-        display: "1-2-3-4-5",
-        characters: "",
+        display: "A-B-C-D",
+        characters: "ABCD",
         written_tones: "",
         spoken_tones: "",
         english: "",
@@ -44,11 +44,11 @@ class Fullsentence extends Component {
   }
 
    componentDidMount = () => {
-    /*socket.on('predicted_tone', data => {
+    socket.on('predicted_tone', data => {
       const prediction = this.state.test_sentence.spoken_tones[data["index"]] === "_" ? "_" : data["prediction"].toString()
       const newToneArray = [...this.state.tones_recorded, prediction]
       this.setState({tones_recorded: newToneArray})
-    })*/
+    })
   }
 
   initRecorder = (stream) => {
@@ -81,8 +81,6 @@ class Fullsentence extends Component {
           _this.recorder.stopRecording(async function() {
           _this.speechEvents.stop()
           let blob = await _this.recorder.getBlob()
-          //let arrayBuffer = await blob.arrayBuffer()
-          //_this.arrayBuffer = arrayBuffer
           socket.emit('phrase_recorded', {voice_recording: blob});
           _this.howler = new Howl({
             src: [URL.createObjectURL(blob)],
@@ -161,7 +159,7 @@ class Fullsentence extends Component {
   }
 
   removeLeft = () => {
-    socket.emit('cut_phrase', {begin: parseInt(this.audioProgress.current.min), end: this.audioProgress.current.valueAsNumber});
+    socket.emit('cut_phrase', {begin: parseInt(this.audioProgress.current.min), end: this.audioProgress.current.valueAsNumber, "character_index": this.state.tones_recorded.length});
     this.setSprites(parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.max))
     var audioSlider = document.getElementById("audio-slider")
     audioSlider.max = this.audioProgress.current.max
