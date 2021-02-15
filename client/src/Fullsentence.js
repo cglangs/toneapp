@@ -42,7 +42,6 @@ class Fullsentence extends Component {
     this.howler = null
     this.recorder = null
     this.speechEvents = null
-    //this.arrayBuffer = null
   }
 
    componentDidMount = () => {

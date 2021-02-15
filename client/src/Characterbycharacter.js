@@ -94,13 +94,6 @@ class Characterbycharacter extends Component {
           _this.setState({voice_present: true, predicted_tone: null})
         });
 
-        /*window.addEventListener('keydown',  (event) => {
-          if (event.keyCode === 39 && _this.state.voice_present && _this.state.get_tone) {
-            console.log("RIGHT ARROW PRESSED")
-            speechEvents.stop()
-          }
-        });*/
-
         _this.speechEvents.on('stopped_speaking', function() {
           console.log('STOPPED SPEAKING');
           _this.recorder.stopRecording(async function() {

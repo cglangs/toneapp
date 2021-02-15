@@ -9,3 +9,4 @@ get_duration.py
 test.py
 test_spectrograms
 phrases.tsv
+phrases_edited.tsv
