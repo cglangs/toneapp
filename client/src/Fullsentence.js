@@ -24,15 +24,17 @@ class Fullsentence extends Component {
       is_recording: false,
       is_playing: false,
       is_paused: false,
+      sentence_finished: false,
+      currentIndex: null,
       character_offsets: [],
       tones_recorded: [],
       test_sentence: {
-        display: "A-B-C-D",
-        characters: "ABCD",
-        written_tones: "",
-        spoken_tones: "",
-        english: "",
-        pinyin: ""
+        display: "你好！",
+        characters: "你好",
+        written_tones: "33",
+        spoken_tones: "23",
+        english: "Hello!",
+        pinyin: "nǐ hǎo"
       }
     }    
     this.audioProgress = React.createRef();
@@ -110,12 +112,16 @@ class Fullsentence extends Component {
     });
   }
 
-  setSprites = (minValue, currentValue, maxValue) => {
+  setSprites = (minValue, currentValue, maxValue, previousMin) => {
      this.howler._sprite = {
       "before" : [minValue, currentValue-minValue], 
       "after" : [currentValue, maxValue-currentValue],
       "all" : [minValue, maxValue-minValue]
     }
+
+    this.state.character_offsets.forEach((char, index) => {
+      this.howler._sprite[index.toString()] = [char.begin, char.end]
+    })
   }
 
   replayAudio = (spriteName) => {
@@ -126,7 +132,6 @@ class Fullsentence extends Component {
       const currentValue = parseInt(this.audioProgress.current.valueAsNumber)
 
       this.setSprites(minimum, currentValue, maximum)
-      console.log(spriteName)
       this.howler.play(spriteName)
     }
   }
@@ -138,7 +143,7 @@ class Fullsentence extends Component {
   }
 
   restartSentence = () => {
-    this.setState({ milliseconds: 0}, () => {this.howler = null})
+    this.setState({ milliseconds: 0, tones_recorded: [], character_offsets: [], currentIndex: null}, () => {this.howler = null})
   }
 
   playWithSlider = () => {
@@ -160,12 +165,39 @@ class Fullsentence extends Component {
 
   removeLeft = () => {
     socket.emit('cut_phrase', {begin: parseInt(this.audioProgress.current.min), end: this.audioProgress.current.valueAsNumber, "character_index": this.state.tones_recorded.length});
-    this.setSprites(parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.max))
-    var audioSlider = document.getElementById("audio-slider")
-    audioSlider.max = this.audioProgress.current.max
-    audioSlider.min = this.audioProgress.current.valueAsNumber
-    audioSlider.value = this.audioProgress.current.valueAsNumber
-    this.setState(prevState => ({character_offsets: [...prevState.character_offsets, parseInt(this.audioProgress.current.valueAsNumber)]}))
+    const finished = this.state.tones_recorded.length === this.state.test_sentence.spoken_tones.length - 1 
+    const charIndex = this.state.tones_recorded.length
+    let _this = this
+    this.setState(prevState => ({character_offsets: [...prevState.character_offsets, {begin: parseInt(this.audioProgress.current.min), end: parseInt(this.audioProgress.current.valueAsNumber)}], sentence_finished: finished}), ()=>{
+      _this.setSprites(parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.max))
+      var audioSlider = document.getElementById("audio-slider")
+      audioSlider.max = this.audioProgress.current.max
+      audioSlider.min = this.audioProgress.current.valueAsNumber
+      audioSlider.value = this.audioProgress.current.valueAsNumber
+    })
+  }
+
+  handleCharClick = (index) => {
+    let _this = this
+    if(index < this.state.tones_recorded.length){
+      this.setState({currentIndex: index}, ()=> {_this.howler.play(index.toString())})  
+    }
+  }
+
+  diplayString = (text = '', highlighted= false, highlightIndex = 0) => {
+     const parts = text.split('')
+     return (
+       <span className="String-holder">
+         {parts.map((char,index)=> {
+           if(highlighted && index === highlightIndex){
+             return <mark key={index} onClick={() => this.handleCharClick(index)}>{char}</mark>
+           } else{
+             return <span key={index} onClick={() => this.handleCharClick(index)}>{char}</span>
+           }
+
+         })}
+      </span>
+     )
   }
 
   render(){
@@ -178,8 +210,11 @@ class Fullsentence extends Component {
           <audio id="replay"/>
           <div style={{display: "flex", flexDirection: "column"}}>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.english}</p>
-          <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
+          {this.state.sentence_finished && <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>}
+          {this.state.sentence_finished && this.diplayString(this.state.test_sentence.spoken_tones, false)}
+          {this.diplayString(this.state.test_sentence.characters, true, this.state.currentIndex)}
+          {this.diplayString(this.state.tones_recorded.join(''), false)}
           <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.is_recording ?  "Recording..." : ""}</p>
           <p style={{"height": "25px"}}>{this.state.milliseconds ? (this.state.milliseconds/1000) + " Seconds" : null}</p>
           {this.howler && <input id="audio-slider" ref={this.audioProgress} type="range" onChange={this.updateTime} />}
