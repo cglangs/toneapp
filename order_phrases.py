@@ -1,6 +1,8 @@
 import csv
 import jieba
 import regex
+import pinyin
+from pypinyin import pinyin as tones, Style
 
 jieba.set_dictionary("user_dict.txt")
 punc = "！？。，"
@@ -19,6 +21,12 @@ def get_new_words_count_and_min_frequency(word_list, word_frequencies, words_use
 	new_words = [word for word in word_list if word not in words_used]
 	return len(new_words),  -1 * min([word_frequencies[word] for word in new_words])
 
+def insert_phrases(sorted_phrase_list):
+	phrase_insert_num = 1
+
+
+
+
 def get_data():
 	with open('phrases_edited.tsv') as csvfile:
 		phrase_list=[]
@@ -26,13 +34,18 @@ def get_data():
 		words_used = set()
 		readCSV = csv.reader(csvfile, delimiter='\t')
 		phrases = list(readCSV)
-		
+
 		for phrase in phrases:
 			new_phrase = {}
 			new_phrase["full_phrase"]=phrase[0]
 			new_phrase["phrase_no_punctuation"]=regex.sub(r"[{}]+".format(punc), "", phrase[0])
-			new_phrase["word_list"]=list(jieba.cut(new_phrase["phrase_no_punctuation"], cut_all=False, HMM=False),)
+			new_phrase["word_list"]=list(jieba.cut(new_phrase["phrase_no_punctuation"], cut_all=False, HMM=False))
+			new_phrase["pinyin"]=[pinyin.get(word) for word in new_phrase["word_list"]]
+			toneArray = tones(new_phrase["phrase_no_punctuation"], style=Style.TONE3)
+			new_phrase["written_tones"]= [tone for l in toneArray for tone in l]
+			#get spoken tones
 			phrase_list.append(new_phrase)
+
 		word_frequencies = get_word_frequencies(phrase_list)
 
 		while len(phrase_list) > 0:
