@@ -35,12 +35,16 @@ def yiTone(word_before, word_after, tone_after):
 		result_tone = "4"
 	return result_tone
 
-
+def buTone(tone_after):
+	result_tone = "4"
+	if tone_after == "4":
+		result_tone = "2"
+	return result_tone
 
 def changeTone(word_list, written_tones):
 	result_tone_list = written_tones.copy()
 	for i in range(len(word_list)):
-		if word_list[i] == "一" and written_tones[i] == "1":
+		if word_list[i] == "一" or word_list[i] == "不":
 			word_before = None
 			word_after = None
 			tone_after = None
@@ -49,7 +53,10 @@ def changeTone(word_list, written_tones):
 			if i < len(word_list) -1:
 				word_after = word_list[i+1]
 				tone_after = written_tones[i+1]
-			result_tone_list[i] = yiTone(word_before,word_after,tone_after)
+			if word_list[i] == "一":
+				result_tone_list[i] = yiTone(word_before,word_after,tone_after)
+			elif word_list[i] == "不":
+				result_tone_list[i] = buTone(tone_after)
 	return result_tone_list		
 
 
