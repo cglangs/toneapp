@@ -186,7 +186,7 @@ class Characterbycharacter extends Component {
         </div>
         <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
         <button className={btn_class} disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.recordingButtonClick}>
-                  {this.state.recording ? "Strop Recording" : "Record"}
+                  {this.state.recording ? "Stop Recording" : "Record"}
         </button>
          <button  className="defaultButton" disabled={this.state.currentIndex >= this.state.tones_recorded.length} onClick={this.replayAudio}>
                   Replay
