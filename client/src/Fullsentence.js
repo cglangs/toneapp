@@ -165,7 +165,6 @@ class Fullsentence extends Component {
   removeLeft = () => {
     socket.emit('cut_phrase', {begin: parseInt(this.audioProgress.current.min), end: this.audioProgress.current.valueAsNumber, "character_index": this.state.tones_recorded.length});
     const finished = this.state.tones_recorded.length === this.state.test_sentence.spoken_tones.length - 1 
-    const charIndex = this.state.tones_recorded.length
     let _this = this
     this.setState(prevState => ({character_offsets: [...prevState.character_offsets, {begin: parseInt(this.audioProgress.current.min), end: parseInt(this.audioProgress.current.valueAsNumber)}], sentence_finished: finished}), ()=>{
       _this.setSprites(parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.max))

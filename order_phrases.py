@@ -103,6 +103,7 @@ def get_data():
 			next_phrase = sorted(enumerate(phrase_list), key = lambda phrase: get_new_words_count_and_min_frequency(phrase[1]["word_list"], word_frequencies, words_used))[0]
 			next_phrase[1]["phrase_order"] = count
 			sorted_phrase_list.append(next_phrase[1])
+			#add words to words_used
 			count +=1
 			del phrase_list[next_phrase[0]]
 

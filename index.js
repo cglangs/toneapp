@@ -21,13 +21,13 @@ const User = mongoose.model('User', userSchema);
 
 
 async function signup(object, params, ctx, resolveInfo) {
-  params.password = await bcrypt.hash(params.password, 10)
-  const newUser = new User({ user_name: params.user_name, email: params.email, password: params.password, role: params.role })
+  params.password = await bcrypt.hash(params.user_password, 10)
+  const newUser = new User({ user_name: params.user_name, email: params.user_email, password: params.user_password, role: params.user_role })
   var user
   
   try{
   	user = await newUser.save()
-  	const token = jwt.sign({ userId: user._id, role: user.role }, ACCESS_SECRET)
+  	const token = jwt.sign({ userId: user._id, role: user.user_role }, ACCESS_SECRET)
     return {user, token}
   }  
   catch(error){
@@ -37,10 +37,10 @@ async function signup(object, params, ctx, resolveInfo) {
 }
 
 async function login(object, params, ctx, resolveInfo) {
-  const password = params.password
-  delete params.password
+  const password = params.user_password
+  delete params.user_password
 
-  const user =  await User.findOne({ email: params.email }).exec();
+  const user =  await User.findOne({ email: params.user_email }).exec();
 
   if (!user) {
     throw new Error('No such user found')
@@ -49,25 +49,42 @@ async function login(object, params, ctx, resolveInfo) {
   if (!valid) {
     throw new Error('Invalid password')
   }
-  user.password = null
-  const token = jwt.sign({ userId: user._id, role: user.role }, ACCESS_SECRET)
+  user.user_password = null
+  const token = jwt.sign({ userId: user._id, role: user.user_role }, ACCESS_SECRET)
   return {user, token}
+}
+
+
+async function getMe(object, params, ctx, resolveInfo) {
+  const user =  await User.find( { _id: { $eq: params.userId } } )
+
+  if (!user) {
+    throw new Error('Error')
+  }
+
+  return user
 }
 
 
 const schema = gql`
   type Mutation {
-  	CreateUser(user_name: String! email: String! password: String! role: String! = "STUDENT"): AuthPayload
-  	Login(email: String! password: String!): AuthPayload
+  	CreateUser(user_name: String! user_email: String! user_password: String! user_role: String! = "STUDENT"): User
+  	Login(user_email: String! user_password: String!): User
+  }
+
+  type Query {
+  	me: User
   }
  
   type User {
   	_id: String!
   	user_name: String!
-  	email: String!
-  	password: String!
-  	role: String!
+  	user_email: String!
+  	user_password: String!
+  	user_role: String!
   }
+
+
 `
 
 const resolvers = {
@@ -78,11 +95,22 @@ const resolvers = {
    	Login(object, params, ctx, resolveInfo) {
    		return login(object, params, ctx, resolveInfo) 
    	}
-   }
+   },
+  Query: {
+    me(object, params, ctx, resolveInfo){
+        var user
+        if(ctx.req.userId){
+            params.user_id = ctx.req.userId
+            user = getMe(object, params, ctx, resolveInfo)
+        }
+
+        return user
+    }
+  }
  }
 
 var corsOptions = {
-  origin: 'http://localhost:19006',
+  origin: 'http://localhost:3000',
   credentials: true
 };
 
