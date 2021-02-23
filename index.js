@@ -20,6 +20,18 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
+const phraseSchema = new mongoose.Schema({
+  	phrase_order: Number,
+  	full_phrase: String,
+  	phrase_no_punctuation: String,
+  	word_list: [String],
+  	pinyin: [String],
+  	written_tones: [String],
+  	spoken_tones: [String]
+});
+
+const Phrase = mongoose.model('Phrase', phraseSchema);
+
 
 async function signup(object, params, ctx, resolveInfo) {
   params.password = await bcrypt.hash(params.user_password, 10)
@@ -59,9 +71,18 @@ async function login(object, params, ctx, resolveInfo) {
   return user
 }
 
+async function getPhraseById(object, params, ctx, resolveInfo) {
+  const phrase =  await Phrase.findById(params.phrase_id)
+
+  if (!phrase) {
+    throw new Error('Error')
+  }
+
+  return phrase
+
+}
 
 async function getMe(object, params, ctx, resolveInfo) {
-  console.log(params)
   const user =  await User.findById(params.user_id)
 
   if (!user) {
@@ -80,6 +101,18 @@ const schema = gql`
 
   type Query {
   	me: User
+  	getPhraseById(phrase_id: String): Phrase
+  }
+
+  type Phrase {
+  	_id: String
+  	phrase_order: Int
+  	full_phrase: String
+  	phrase_no_punctuation: String
+  	word_list: [String]
+  	pinyin: [String]
+  	written_tones: [String]
+  	spoken_tones: [String]
   }
  
   type User {
@@ -89,8 +122,6 @@ const schema = gql`
   	user_password: String
   	user_role: String
   }
-
-
 `
 
 const resolvers = {
@@ -111,6 +142,9 @@ const resolvers = {
         }
 
         return user
+    },
+    getPhraseById(object, params, ctx, resolveInfo) {
+      return getPhraseById(object, params, ctx, resolveInfo)    
     }
   }
  }

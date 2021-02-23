@@ -1,12 +1,10 @@
-
 import React, { Component } from 'react'
 import { Switch, Route } from 'react-router-dom'
 import Login from './Login'
 import Header from './Header'
 import Characterbycharacter from './Characterbycharacter'
 import Fullsentence from './Fullsentence'
-
-
+import Learn from './Learn'
 import {Query} from 'react-apollo';
 import gql from 'graphql-tag';
 
@@ -22,9 +20,7 @@ query getUser {
 }
 `
 
-
 class App extends Component {
-
   render() {
     return(
       <div>
@@ -33,16 +29,20 @@ class App extends Component {
         if (loading) return <div>Fetching</div>
         if (error) return <div>error</div>
         const user = data.me
-        console.log(user)
         return(
-        <div>
+          <div>
           <Header user={user} refetchUser={refetch}/>
+          <div className="App"> 
+            <header className="App-header">  
           <Switch>
             <Route exact path="/fullsentence" render={() => (<Fullsentence  user={user} refetchUser={refetch}/> )} />
             <Route exact path="/charbychar" component={Characterbycharacter} />
+            <Route exact path="/learn" component={Learn} />
             <Route exact path="/login" render={() => (<Login user={user} refetchUser={refetch}/>)} />
           </Switch>
-        </div>
+        </header>
+      </div>
+      </div>
         )
       }}
       </Query>

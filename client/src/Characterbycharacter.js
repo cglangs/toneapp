@@ -22,7 +22,6 @@ class Characterbycharacter extends Component {
       voice_present: false,
       recording: false,
       new_audio: [],
-      get_tone: true,
       tones_recorded: [],
       currentIndex: 0,
       sentence_finished: false,
@@ -68,14 +67,12 @@ class Characterbycharacter extends Component {
     const newAudioArray = [...this.state.new_audio]
     newAudioArray.splice(this.state.currentIndex, 1, newAudio)
 
-    if(this.state.get_tone){
-        this.setState({voice_present: false, new_audio: newAudioArray, recording: false, currentIndex: previousIndex + 1, sentence_finished: finished, automatic_mode: automatic}, () =>
-      {
-          socket.emit('tone_recorded', {voice_recording: blob, character_index: previousIndex, threshold: this.state.threshold_decibels});
-      })
-    } else{
-      this.setState({voice_present: false, new_audio: newAudioArray, recording: false}, () => { this.state.new_audio[previousIndex].play()})
-    }   
+    
+    this.setState({voice_present: false, new_audio: newAudioArray, recording: false, currentIndex: previousIndex + 1, sentence_finished: finished, automatic_mode: automatic}, () =>
+    {
+        socket.emit('tone_recorded', {voice_recording: blob, character_index: previousIndex, threshold: this.state.threshold_decibels});
+    })
+   
   }
 
 
@@ -105,14 +102,6 @@ class Characterbycharacter extends Component {
         });
         _this.setState({recording: true})
     });
-  }
-
-  handleSliderChange = (e) => {
-    this.setState({threshold_decibels: e.target.value}, () => this.state.harkObject.setThreshold(this.state.threshold_decibels));
-  }
-
-  toggleMic = () => {
-    this.setState({get_tone: !this.state.get_tone})
   }
 
   toggleMode = () => {
@@ -169,8 +158,7 @@ class Characterbycharacter extends Component {
     console.log(this.state)
     let btn_class = this.state.recording ? "pressedButton" : "defaultButton";
     return (
-      <div className="App">
-        <header className="App-header">
+      <div>
         {
           this.state.test_sentence.characters.split('').map((recording, index)=> {
             return <audio key={index} id={"replay-" + index}/>
@@ -195,29 +183,17 @@ class Characterbycharacter extends Component {
                   Restart Sentence
         </button>
         </div>
-        <div style={{display: "flex", flexDirection: "column", justifyContent: "center", width: "40%"}}>
+        <div style={{display: "flex", flexDirection: "column", justifyContent: "center"}}>
           <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.recording ?  "Recording..." : ""}</p>
-          <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
-            <p style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginRight": "20px", "width": "50px"}}>{"Test Mic"}</p> 
-            <label className="switch">
-              <input type="checkbox" checked={this.state.get_tone} onChange={this.toggleMic} />
-              <span className="slider round"></span>
-            </label>
-            <p style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginLeft": "5%", "width": "50px"}}>{"Get Tone"}</p> 
-          </div>
           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
             <p style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginRight": "20px", "width": "50px"}}>{"Manual Mode"}</p> 
             <label className="switch">
               <input type="checkbox" checked={this.state.automatic_mode} onChange={this.toggleMode} />
               <span className="slider round"></span>
             </label>
-           <p style={{fontSize: "14px", "width": "50px", "marginBlockStart": "-1.5em", "marginLeft": "5%"}}>{"Automatic Mode"}</p> 
+           <p style={{fontSize: "14px", "width": "50px", "marginBlockStart": "-1.5em", "marginLeft": "3%"}}>{"Automatic Mode"}</p> 
           </div>
          </div>
-        <label>Mic sensitivity</label>
-        <input type="range" min="1" max="99" disabled={this.state.harkObject == null}value={this.state.threshold_decibels} onChange={this.handleSliderChange}/>
-        <span>{this.state.threshold_decibels}</span>
-        </header>
       </div>
     );
   }

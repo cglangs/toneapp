@@ -12,13 +12,8 @@ class Header extends Component {
       <div>
         <div>
             <div className="flex">
-              <Link to="/fullsentence">
-                Full Sentence
-              </Link>
-            </div>
-            <div className="flex">
-              <Link to="/charbychar">
-                Character by Character
+              <Link to="/learn">
+                Learn
               </Link>
             </div>
           </div>

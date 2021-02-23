@@ -203,48 +203,45 @@ class Fullsentence extends Component {
     const btns_disabled = this.howler == null
     console.log(this.state)
     return (
-      <div className="App"> 
-        <header className="App-header">
-          <audio id="replay"/>
           <div style={{display: "flex", flexDirection: "column"}}>
-          <p style={{"textAlign": "center"}}>{this.state.test_sentence.english}</p>
-          <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
-          {this.state.sentence_finished && <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>}
-          {this.state.sentence_finished && this.diplayString(this.state.test_sentence.spoken_tones, false)}
-          {this.diplayString(this.state.test_sentence.characters, true, this.state.currentIndex)}
-          {this.diplayString(this.state.tones_recorded.join(''), false)}
-          <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.is_recording ?  "Recording..." : ""}</p>
-          <p style={{"height": "25px"}}>{this.state.milliseconds ? (this.state.milliseconds/1000) + " Seconds" : null}</p>
-          {this.howler && <input id="audio-slider" ref={this.audioProgress} type="range" onChange={this.updateTime} />}
-          <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
-            <button className={btn_class} onClick={this.startRecording}>
-                  {this.state.is_recording ? "Stop Recording" : "Record"}
-            </button>
-            <button  className="defaultButton" disabled={btns_disabled} onClick={this.removeLeft}>
-                  Remove Left
-            </button>
-            <button  className="defaultButton" disabled={btns_disabled} onClick={()=> this.setState({is_playing: true}, ()=>{this.playWithSlider()})}>
-                  Play
-            </button>
-            <button  className="defaultButton" disabled={btns_disabled || !this.state.is_playing} onClick={this.pauseAudio}>
-                  Pause
-            </button>
-            <button  className="defaultButton" disabled={btns_disabled} onClick={() => this.replayAudio(strings.ALL)}>
-                  Play All
-            </button>
-            <button  className="defaultButton" disabled={btns_disabled} onClick={() => this.replayAudio(strings.BEFORE)}>
-                  Play Before
-            </button>
-            <button  className="defaultButton" disabled={btns_disabled} onClick={() => this.replayAudio(strings.AFTER)}>
-                  Play After
-            </button>
-             <button  className="defaultButton" disabled={btns_disabled} onClick={this.restartSentence}>
-                  Restart Sentence
-            </button>
+            <audio id="replay"/>
+            <p style={{"textAlign": "center"}}>{this.state.test_sentence.english}</p>
+            <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
+            {this.state.sentence_finished && <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>}
+            {this.state.sentence_finished && this.diplayString(this.state.test_sentence.spoken_tones, false)}
+            {this.diplayString(this.state.test_sentence.characters, true, this.state.currentIndex)}
+            {this.diplayString(this.state.tones_recorded.join(''), false)}
+            <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.is_recording ?  "Recording..." : ""}</p>
+            <p style={{"height": "25px"}}>{this.state.milliseconds ? (this.state.milliseconds/1000) + " Seconds" : null}</p>
+            {this.howler && <input id="audio-slider" ref={this.audioProgress} type="range" onChange={this.updateTime} />}
+            <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
+              <button className={btn_class} onClick={this.startRecording}>
+                    {this.state.is_recording ? "Stop Recording" : "Record"}
+              </button>
+              <button  className="defaultButton" disabled={btns_disabled} onClick={this.removeLeft}>
+                    Remove Left
+              </button>
+              <button  className="defaultButton" disabled={btns_disabled} onClick={()=> this.setState({is_playing: true}, ()=>{this.playWithSlider()})}>
+                    Play
+              </button>
+              <button  className="defaultButton" disabled={btns_disabled || !this.state.is_playing} onClick={this.pauseAudio}>
+                    Pause
+              </button>
+              <button  className="defaultButton" disabled={btns_disabled} onClick={() => this.replayAudio(strings.ALL)}>
+                    Play All
+              </button>
+              <button  className="defaultButton" disabled={btns_disabled} onClick={() => this.replayAudio(strings.BEFORE)}>
+                    Play Before
+              </button>
+              <button  className="defaultButton" disabled={btns_disabled} onClick={() => this.replayAudio(strings.AFTER)}>
+                    Play After
+              </button>
+               <button  className="defaultButton" disabled={btns_disabled} onClick={this.restartSentence}>
+                    Restart Sentence
+              </button>
+             </div>
         </div>
-        </div>
-        </header>
-      </div>
+
     );
   }
 }
