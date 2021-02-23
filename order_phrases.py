@@ -22,7 +22,10 @@ def get_word_frequencies(phrase_list):
 
 def get_new_words_count_and_min_frequency(word_list, word_frequencies, words_used):
 	new_words = [word for word in word_list if word not in words_used]
-	return len(new_words),  -1 * min([word_frequencies[word] for word in new_words])
+	len_new_words = len(new_words)
+	negative_freq_score = 0 if len_new_words == 0 else -1 * min([word_frequencies[word] for word in new_words])
+
+	return len_new_words,negative_freq_score
 
 
 def yiTone(word_before, word_after, tone_after):
@@ -103,7 +106,7 @@ def get_data():
 			next_phrase = sorted(enumerate(phrase_list), key = lambda phrase: get_new_words_count_and_min_frequency(phrase[1]["word_list"], word_frequencies, words_used))[0]
 			next_phrase[1]["phrase_order"] = count
 			sorted_phrase_list.append(next_phrase[1])
-			#add words to words_used
+			words_used.update(next_phrase[1]["word_list"])
 			count +=1
 			del phrase_list[next_phrase[0]]
 

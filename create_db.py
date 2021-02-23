@@ -21,10 +21,8 @@ intervals_data = [
 phrase_data = order_phrases.get_data()
 db = client.tone_db
 
-users = db.users
 phrases = db.phrases
 intervals = db.intervals
-user_progress = db.user_progress
 
 db.phrases.insert_many(phrase_data)
 db.intervals.insert_many(intervals_data)
