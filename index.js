@@ -32,6 +32,13 @@ const phraseSchema = new mongoose.Schema({
 
 const Phrase = mongoose.model('Phrase', phraseSchema);
 
+const deckSchema = new mongoose.Schema({
+  deck_id: Number,
+  deck_name: String
+});
+
+const Deck = mongoose.model('Deck', deckSchema);
+
 
 async function signup(object, params, ctx, resolveInfo) {
   params.password = await bcrypt.hash(params.user_password, 10)
@@ -92,6 +99,14 @@ async function getMe(object, params, ctx, resolveInfo) {
   return user
 }
 
+async function getDecks(object, params, ctx, resolveInfo) {
+  const decks =  await Deck.find({});
+  if (!decks) {
+    throw new Error('Error')
+  }
+
+  return decks
+}
 
 const schema = gql`
   type Mutation {
@@ -102,7 +117,13 @@ const schema = gql`
   type Query {
   	me: User
   	getPhraseById(phrase_id: String): Phrase
+  	getDecks: [Deck]
   }
+
+  type Deck {
+  	deck_id: Int
+  	deck_name: String
+  }  
 
   type Phrase {
   	_id: String
@@ -145,7 +166,10 @@ const resolvers = {
     },
     getPhraseById(object, params, ctx, resolveInfo) {
       return getPhraseById(object, params, ctx, resolveInfo)    
-    }
+    },
+	getDecks(object, params, ctx, resolveInfo) {
+	  return getDecks(object, params, ctx, resolveInfo)    
+	},   
   }
  }
 

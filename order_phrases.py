@@ -95,8 +95,10 @@ def get_data():
 			new_phrase["word_list"]=list(jieba.cut(new_phrase["phrase_no_punctuation"], cut_all=False, HMM=False))
 			new_phrase["pinyin"]=[pinyin.get(word) for word in new_phrase["word_list"]]
 			toneArray = tones(new_phrase["phrase_no_punctuation"], style=Style.TONE3)
+			new_phrase["pinyin_no_tones"] = [tone[:-1] for l in toneArray for tone in l]
 			new_phrase["written_tones"]= [spliceTone(tone) for l in toneArray for tone in l]
 			new_phrase["spoken_tones"]=changeTone(new_phrase["word_list"],new_phrase["written_tones"])
+			new_phrase["deck_id"]=1
 			phrase_list.append(new_phrase)
 
 		word_frequencies = get_word_frequencies(phrase_list)

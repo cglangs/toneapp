@@ -3,7 +3,7 @@ from pymongo import MongoClient
 
 client = MongoClient()
 client.drop_database('tone_db')
-
+'''
 intervals_data = [
 	{"interval_id": 0, "seconds": 0},
 	{"interval_id": 1, "seconds": 5},
@@ -17,15 +17,16 @@ intervals_data = [
 	{"interval_id": 9, "seconds": 2160000},
 	{"interval_id": 10, "seconds": 10510000}
 ]
-
+'''
 phrase_data = order_phrases.get_data()
 db = client.tone_db
 
 phrases = db.phrases
-intervals = db.intervals
-
+decks = db.decks
+#intervals = db.intervals
+db.decks.insert_one({"deck_id": 1, "deck_name": "HSK1 Phrases"})
 db.phrases.insert_many(phrase_data)
-db.intervals.insert_many(intervals_data)
+#db.intervals.insert_many(intervals_data)
 
 
 

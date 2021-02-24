@@ -1,23 +1,27 @@
 import React, { Component } from 'react'
 import { withRouter } from 'react-router'
-import { Link } from 'react-router-dom'
+import { Link} from 'react-router-dom'
 import { getCookie} from './utils'
+
 
 class Header extends Component {
 
   render() {
     const isLoggedIn = !!getCookie('access-token');
+    const currentPath = this.props.location.pathname
+    console.log(currentPath)
+
 
     return (
       <div>
         <div>
-            <div className="flex">
+            {currentPath !== "/learn" && (<div className="flex">
               <Link to="/learn">
                 Learn
               </Link>
-            </div>
+            </div>)}
           </div>
-          <div className="flex flex-fixed">
+          {currentPath !== "/login" && (<div className="flex flex-fixed">
             {isLoggedIn && this.props.user && this.props.user.user_role !== 'TESTER' ? (
               <div
                 onClick={() => {
@@ -34,7 +38,7 @@ class Header extends Component {
                 Login
               </Link>
             )}
-          </div>
+          </div>)}
       </div>
     )
   }
