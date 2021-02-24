@@ -54,6 +54,68 @@
   background-color: lightBlue;
 }
 
+.menuContainer {
+  width: 100%;
+}
+
+.menuHeader {
+  height: 10%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+}
+
+.menuList {
+  height: 90%;
+  width: 100%;
+  position: absolute;
+  background-color: lightGrey;
+  top: 10%;
+}
+
+.menuItem {
+  background-color: darkGrey;
+  position: absolute;
+  top: 0;
+  height: 15%;
+  width: 100%;
+}
+
+.menuSubItemContainer {
+  position:absolute;
+  top: 15%;
+  margin-left: 10%;
+  height: 85%;
+  width: 90%;
+  overflow: scroll;
+}
+
+.menuSubItem {
+  margin-left: 10%;
+  border-style: solid;
+  border-color: black;
+  color: black;
+}
+
+.chevron::before {
+  border-style: solid;
+  border-width: 0.25em 0.25em 0 0;
+  content: '';
+  display: inline-block;
+  height: 0.45em;
+  left: 0.15em;
+  position: relative;
+  top: 0.15em;
+  transform: rotate(-45deg);
+  vertical-align: top;
+  width: 0.45em;
+}
+
+.chevron.bottom:before {
+  top: 0;
+  transform: rotate(135deg);
+}
+
 .App-link {
   color: #61dafb;
 }

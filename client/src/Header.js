@@ -15,9 +15,9 @@ class Header extends Component {
     return (
       <div>
         <div>
-            {currentPath !== "/learn" && (<div className="flex">
-              <Link to="/learn">
-                Learn
+            {currentPath !== "/dashboard" && (<div className="flex">
+              <Link to="/dashboard">
+                Dashboard
               </Link>
             </div>)}
           </div>

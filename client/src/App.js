@@ -4,6 +4,7 @@ import Login from './Login'
 import Header from './Header'
 import Characterbycharacter from './Characterbycharacter'
 import Fullsentence from './Fullsentence'
+import Dashboard from './Dashboard'
 import Learn from './Learn'
 import {Query} from 'react-apollo';
 import gql from 'graphql-tag';
@@ -38,6 +39,7 @@ class App extends Component {
             <Route exact path="/fullsentence" render={() => (<Fullsentence  user={user} refetchUser={refetch}/> )} />
             <Route exact path="/charbychar" component={Characterbycharacter} />
             <Route exact path="/learn" component={Learn} />
+            <Route exact path="/dashboard" component={Dashboard} />
             <Route exact path="/login" render={() => (<Login user={user} refetchUser={refetch}/>)} />
           </Switch>
         </header>

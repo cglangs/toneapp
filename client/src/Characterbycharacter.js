@@ -26,15 +26,8 @@ class Characterbycharacter extends Component {
       currentIndex: 0,
       sentence_finished: false,
       automatic_mode: false,
-      test_sentence: {
-        display: "我喜欢在图书馆学习。",
-        characters: "我喜欢在图书馆学习",
-        written_tones: "33_421322",
-        spoken_tones: "23_421322",
-        english: "I like to study in the library.",
-        pinyin: "wǒ xǐhuan zài túshūguǎn xuéxí"
-      }
-    }  
+    }
+    this.state.test_sentence = this.props.sentence
     this.recorder = null
     this.speechEvents = null
   }
@@ -165,7 +158,6 @@ class Characterbycharacter extends Component {
           })
         }
         <div style={{display: "flex", flexDirection: "column"}}>
-          <p style={{"textAlign": "center"}}>{this.state.test_sentence.english}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
           {this.state.sentence_finished && <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>}
           {this.state.sentence_finished && this.diplayString(this.state.test_sentence.spoken_tones, false)}

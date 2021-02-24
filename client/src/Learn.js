@@ -1,18 +1,20 @@
 import React, { Component } from 'react'
 import Characterbycharacter from './Characterbycharacter'
 import Fullsentence from './Fullsentence'
-import {Query} from 'react-apollo';
-import gql from 'graphql-tag';
-
 
 class Learn extends Component {
-  state = {
-    fullSentenceMode: false
+  constructor(props){
+    super(props)
+    this.state = {
+      fullSentenceMode: false,
+      sentence: props.location.state.sentence
+    }
   }
 
   changeMode = (isFullSentenceMode) => {
     this.setState({fullSentenceMode: isFullSentenceMode})
   }
+
   render() {
     return(
       <div className="LearnContainer">
@@ -20,7 +22,7 @@ class Learn extends Component {
           <p className={!this.state.fullSentenceMode ? "selectedItem": ""} onClick={() => this.changeMode(false)}>Character by Character</p>
           <p className={this.state.fullSentenceMode ? "selectedItem": ""} onClick={() => this.changeMode(true)}>Full Sentence</p>
         </div>
-        {this.state.fullSentenceMode ? <Fullsentence/>: <Characterbycharacter/>}
+        {this.state.fullSentenceMode ? <Fullsentence sentence={this.state.sentence}/>: <Characterbycharacter sentence={this.state.sentence}/>}
       </div>
     )
   }

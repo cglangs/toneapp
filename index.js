@@ -108,6 +108,15 @@ async function getDecks(object, params, ctx, resolveInfo) {
   return decks
 }
 
+async function getPhrasesInDeck(object, params, ctx, resolveInfo) {
+  const phrases =  await Phrase.find( { deck_id: { $eq: params.deck_id } } )
+  if (!phrases) {
+    throw new Error('Error')
+  }
+
+  return phrases
+}
+
 const schema = gql`
   type Mutation {
   	CreateUser(user_name: String! user_email: String! user_password: String! user_role: String! = "STUDENT"): User
@@ -118,11 +127,14 @@ const schema = gql`
   	me: User
   	getPhraseById(phrase_id: String): Phrase
   	getDecks: [Deck]
+  	getPhrasesInDeck(deck_id: Int): [Phrase]
   }
 
   type Deck {
   	deck_id: Int
   	deck_name: String
+    deck_description: String
+    phrase_count: Int
   }  
 
   type Phrase {
@@ -169,7 +181,10 @@ const resolvers = {
     },
 	getDecks(object, params, ctx, resolveInfo) {
 	  return getDecks(object, params, ctx, resolveInfo)    
-	},   
+	},
+	getPhrasesInDeck(object, params, ctx, resolveInfo) {
+	  return getPhrasesInDeck(object, params, ctx, resolveInfo)    
+	},      
   }
  }
 

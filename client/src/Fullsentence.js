@@ -28,15 +28,8 @@ class Fullsentence extends Component {
       currentIndex: null,
       character_offsets: [],
       tones_recorded: [],
-      test_sentence: {
-        display: "你好！",
-        characters: "你好",
-        written_tones: "33",
-        spoken_tones: "23",
-        english: "Hello!",
-        pinyin: "nǐ hǎo"
-      }
-    }    
+    }
+    this.state.test_sentence = this.props.sentence
     this.audioProgress = React.createRef();
     this.requestRef = React.createRef();
     this.howler = null
@@ -205,7 +198,6 @@ class Fullsentence extends Component {
     return (
           <div style={{display: "flex", flexDirection: "column"}}>
             <audio id="replay"/>
-            <p style={{"textAlign": "center"}}>{this.state.test_sentence.english}</p>
             <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
             {this.state.sentence_finished && <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>}
             {this.state.sentence_finished && this.diplayString(this.state.test_sentence.spoken_tones, false)}
