@@ -109,6 +109,7 @@
   transform: rotate(-45deg);
   vertical-align: top;
   width: 0.45em;
+  margin-left: 90%;
 }
 
 .chevron.bottom:before {

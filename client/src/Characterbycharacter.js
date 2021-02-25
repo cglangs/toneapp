@@ -5,7 +5,6 @@ import hark from 'hark'
 import io from "socket.io-client"
 import RecordRTC from "recordrtc"
 
-
 //import logo from './logo.svg';
 import './App.css';
 import './Switch.css';
@@ -107,6 +106,14 @@ class Characterbycharacter extends Component {
     }
   }
 
+  playNativeVoice = () => {
+    const letters = this.state.test_sentence.pinyin_no_tones[this.state.currentIndex]
+    const toneNumber = this.state.test_sentence.spoken_tones[this.state.currentIndex]
+    const fileName = '/native_voice_audio/' + letters + toneNumber + '_FV1_MP3.mp3'
+    const audio = new Audio(fileName)
+    audio.play()
+  }
+
 
   restartSentence = () => {
     this.setState({currentIndex: 0, tones_recorded: [], sentence_finished: false, new_audio: [], recording: false, automatic_mode: false})
@@ -170,6 +177,9 @@ class Characterbycharacter extends Component {
         </button>
          <button  className="defaultButton" disabled={this.state.currentIndex >= this.state.tones_recorded.length} onClick={this.replayAudio}>
                   Replay
+        </button>
+         <button  className="defaultButton"  disabled={this.state.test_sentence.spoken_tones[this.state.currentIndex] === '_'} onClick={this.playNativeVoice}>
+                  Play Native Speaker Audio
         </button>
          <button  className="defaultButton" onClick={this.restartSentence}>
                   Restart Sentence

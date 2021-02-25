@@ -20,6 +20,7 @@ query getPhraseList($deck_id: Int!) {
     phrase_no_punctuation
     word_list
     pinyin
+    pinyin_no_tones
     written_tones
     spoken_tones
   }
@@ -42,6 +43,7 @@ class Dashboard extends Component {
     phrase_data["characters"] = phrase.phrase_no_punctuation
     phrase_data["pinyin"] = phrase.pinyin.join(" ")
     phrase_data["spoken_tones"] = phrase.spoken_tones.join("").replace("0","_")
+    phrase_data["pinyin_no_tones"] = phrase.pinyin_no_tones
     this.props.history.push({
       pathname: '/learn',
       state: {

@@ -26,6 +26,7 @@ const phraseSchema = new mongoose.Schema({
   	phrase_no_punctuation: String,
   	word_list: [String],
   	pinyin: [String],
+    pinyin_no_tones: [String],
   	written_tones: [String],
   	spoken_tones: [String]
 });
@@ -144,6 +145,7 @@ const schema = gql`
   	phrase_no_punctuation: String
   	word_list: [String]
   	pinyin: [String]
+    pinyin_no_tones: [String]
   	written_tones: [String]
   	spoken_tones: [String]
   }
