@@ -90,6 +90,12 @@
   overflow: scroll;
 }
 
+.toneTrainingInterface {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .menuSubItem {
   margin-left: 10%;
   border-style: solid;

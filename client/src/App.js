@@ -35,7 +35,7 @@ class App extends Component {
             <header className="App-header">  
           <Switch>
             <Route exact path="/dashboard" component={Dashboard} />
-            <Route exact path="/learn" component={Learn} />
+            <Route exact path="/learn/:deckId/:phraseOrder" component={Learn} />
             <Route exact path="/login" render={() => (<Login user={user} refetchUser={refetch}/>)} />
           </Switch>
         </header>

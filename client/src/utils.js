@@ -13,3 +13,10 @@ export const getCookie = (cname) => {
   }
   return "";
 }
+
+
+export const redirectToLearnComponent = (props, deck_id, phrase_order) => {
+    props.history.push({
+      pathname: '/learn/' + deck_id + '/' + phrase_order
+    })
+ }

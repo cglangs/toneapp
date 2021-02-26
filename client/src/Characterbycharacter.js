@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import hark from 'hark'
 
 
-import io from "socket.io-client"
+//import io from "socket.io-client"
 import RecordRTC from "recordrtc"
 
 //import logo from './logo.svg';
@@ -10,8 +10,8 @@ import './App.css';
 import './Switch.css';
 
 
-let endpoint = "http://localhost:5000"
-let socket = io.connect(`${endpoint}`)
+//let endpoint = "http://localhost:5000"
+//let socket = io.connect(`${endpoint}`)
 class Characterbycharacter extends Component {
 
   constructor(props) {
@@ -26,6 +26,7 @@ class Characterbycharacter extends Component {
       sentence_finished: false,
       automatic_mode: false,
     }
+    console.log("CONSTRUCTED")
     this.state.test_sentence = this.props.sentence
     this.recorder = null
     this.speechEvents = null
@@ -42,13 +43,20 @@ class Characterbycharacter extends Component {
       return recorder
   }
 
-  componentDidMount = () => {
+  /*componentDidMount = () => {
     socket.on('predicted_tone', data => {
       const prediction = this.state.test_sentence.spoken_tones[data["index"]] === "_" ? "_" : data["prediction"].toString()
       const newToneArray = [...this.state.tones_recorded]
       newToneArray.splice(data["index"], 1, prediction)
       this.setState({tones_recorded: newToneArray},() => {!this.state.sentence_finished && this.state.automatic_mode && this.startRecording()})
     })
+  }*/
+
+  componentDidUpdate = (prevProps) => {
+    if(prevProps.sentence.phrase_order && prevProps.sentence.phrase_order !== this.props.sentence.phrase_order){
+      console.log("UPDATE")
+      this.setState({test_sentence: this.props.sentence})
+    }
   }
 
   saveRecording = (newAudio, blob) => {
@@ -62,7 +70,7 @@ class Characterbycharacter extends Component {
     
     this.setState({voice_present: false, new_audio: newAudioArray, recording: false, currentIndex: previousIndex + 1, sentence_finished: finished, automatic_mode: automatic}, () =>
     {
-        socket.emit('tone_recorded', {voice_recording: blob, character_index: previousIndex, threshold: this.state.threshold_decibels});
+        //socket.emit('tone_recorded', {voice_recording: blob, character_index: previousIndex, threshold: this.state.threshold_decibels});
     })
    
   }
@@ -155,7 +163,6 @@ class Characterbycharacter extends Component {
   }
 
   render(){
-    console.log(this.state)
     let btn_class = this.state.recording ? "pressedButton" : "defaultButton";
     return (
       <div>

@@ -79,8 +79,8 @@ async function login(object, params, ctx, resolveInfo) {
   return user
 }
 
-async function getPhraseById(object, params, ctx, resolveInfo) {
-  const phrase =  await Phrase.findById(params.phrase_id)
+async function getPhraseByDeckIdPhraseOrder(object, params, ctx, resolveInfo) {
+  const phrase =  await Phrase.findOne({ deck_id: params.deck_id , phrase_order: params.phrase_order})
 
   if (!phrase) {
     throw new Error('Error')
@@ -110,7 +110,7 @@ async function getDecks(object, params, ctx, resolveInfo) {
 }
 
 async function getPhrasesInDeck(object, params, ctx, resolveInfo) {
-  const phrases =  await Phrase.find( { deck_id: { $eq: params.deck_id } } )
+  const phrases =  await Phrase.find( { deck_id: params.deck_id } )
   if (!phrases) {
     throw new Error('Error')
   }
@@ -126,7 +126,7 @@ const schema = gql`
 
   type Query {
   	me: User
-  	getPhraseById(phrase_id: String): Phrase
+  	getPhraseByDeckIdPhraseOrder(deck_id: Int phrase_order: Int): Phrase
   	getDecks: [Deck]
   	getPhrasesInDeck(deck_id: Int): [Phrase]
   }
@@ -178,15 +178,15 @@ const resolvers = {
 
         return user
     },
-    getPhraseById(object, params, ctx, resolveInfo) {
-      return getPhraseById(object, params, ctx, resolveInfo)    
+    getPhraseByDeckIdPhraseOrder(object, params, ctx, resolveInfo) {
+      return getPhraseByDeckIdPhraseOrder(object, params, ctx, resolveInfo)    
     },
-	getDecks(object, params, ctx, resolveInfo) {
-	  return getDecks(object, params, ctx, resolveInfo)    
-	},
-	getPhrasesInDeck(object, params, ctx, resolveInfo) {
-	  return getPhrasesInDeck(object, params, ctx, resolveInfo)    
-	},      
+  	getDecks(object, params, ctx, resolveInfo) {
+  	  return getDecks(object, params, ctx, resolveInfo)    
+  	},
+  	getPhrasesInDeck(object, params, ctx, resolveInfo) {
+  	  return getPhrasesInDeck(object, params, ctx, resolveInfo)    
+  	},      
   }
  }
 
