@@ -48,7 +48,7 @@ class Characterbycharacter extends Component {
       const prediction = this.state.test_sentence.spoken_tones[data["index"]] === "_" ? "_" : data["prediction"].toString()
       const newToneArray = [...this.state.tones_recorded]
       newToneArray.splice(data["index"], 1, prediction)
-      this.setState({tones_recorded: newToneArray},() => {!this.state.sentence_finished && this.state.automatic_mode && this.startRecording()})
+      this.setState({tones_recorded: newToneArray},() => {this.checkPhrase()})
     })
   }
 
@@ -57,6 +57,19 @@ class Characterbycharacter extends Component {
       console.log("UPDATE")
       this.setState({test_sentence: this.props.sentence})
     }
+  }
+
+  checkPhrase = () => {
+    let isCorrect = false
+    if(!this.state.sentence_finished && this.state.automatic_mode){
+      this.startRecording()
+    } else if(this.state.sentence_finished){
+      isCorrect = this.state.tones_recorded.every((tone,index) => tone === this.state.test_sentence.spoken_tones[index])    
+    }
+    if(isCorrect){
+      this.props.mutationFunction({variables:{deck_id: this.state.test_sentence.deck_id, phrase_order: this.state.test_sentence.phrase_order}})
+    }
+
   }
 
   saveRecording = (newAudio, blob) => {

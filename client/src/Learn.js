@@ -1,7 +1,7 @@
 import { useState} from 'react'
 import Characterbycharacter from './Characterbycharacter'
 import Fullsentence from './Fullsentence'
-import { useQuery } from  'react-apollo';
+import { useQuery, useMutation } from  'react-apollo';
 import gql from 'graphql-tag';
 import { redirectToLearnComponent} from './utils'
 import { useParams } from "react-router-dom";
@@ -24,7 +24,7 @@ query getPhrase($deck_id: Int!) {
 
 const UPDATE_PROGRESS = gql`
 mutation updateProgress($deck_id: Int!, $phrase_order: Int!) {
-  updateUserProgress(deck_id: $deck_id, phrase_order: $phrase_order)
+  setPhraseLearned(deck_id: $deck_id, phrase_order: $phrase_order)
 }
 `
 
@@ -38,10 +38,10 @@ const Learn = (props) => {
     variables: {deck_id: parseInt(deckId)}
   });
 
+  const [updateProgress, { mutationData }] = useMutation(UPDATE_PROGRESS)
+
   if (loading) return 'Loading...';
   if (error) return `Error! ${error.message}`;
-
-
 
   function changeMode(isFullSentenceMode){
     setSentenceMode(isFullSentenceMode)
@@ -50,6 +50,8 @@ const Learn = (props) => {
   function getPhraseDetails(phrase){
     console.log(phrase)
     let phrase_data = {}
+    phrase_data["deck_id"] = parseInt(deckId)
+    phrase_data["phrase_order"] = parseInt(phraseOrder)
     phrase_data["display"] = phrase.full_phrase
     phrase_data["characters"] = phrase.phrase_no_punctuation
     phrase_data["pinyin"] = phrase.pinyin.join(" ")
@@ -72,7 +74,7 @@ const Learn = (props) => {
       <div className="toneTrainingInterface">
       <button disabled={phraseOrder === 1 } style={{marginRight: "5%"}}  onClick={() => onClickEvent(deckId,  parseInt(phraseOrder) - 1)}>{"<"}</button>
       <div style={{width: "75%"}}>
-      {fullSentenceMode ? <Fullsentence sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])}/>: <Characterbycharacter sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])}/>}
+      {fullSentenceMode ? <Fullsentence sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={updateProgress} />: <Characterbycharacter sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={updateProgress}/>}
       </div>
       <button disabled={phraseOrder === data.getPhrasesInDeck.length } style={{marginLeft: "5%"}} onClick={() => onClickEvent(deckId, parseInt(phraseOrder) + 1)}>{">"}</button>
       </div>

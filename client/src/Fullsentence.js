@@ -4,15 +4,15 @@ import {Howl} from 'howler';
 import hark from 'hark'
 import {strings} from './constants'
 
-//import io from "socket.io-client"
+import io from "socket.io-client"
 import RecordRTC from "recordrtc"
 
 import './App.css';
 import './Switch.css';
 
 
-//let endpoint = "http://localhost:5000"
-//let socket = io.connect(`${endpoint}`)
+let endpoint = "http://localhost:5000"
+let socket = io.connect(`${endpoint}`)
 class Fullsentence extends Component {
 
   constructor(props) {
@@ -37,13 +37,24 @@ class Fullsentence extends Component {
     this.speechEvents = null
   }
 
-  /* componentDidMount = () => {
+  componentDidMount = () => {
     socket.on('predicted_tone', data => {
       const prediction = this.state.test_sentence.spoken_tones[data["index"]] === "_" ? "_" : data["prediction"].toString()
       const newToneArray = [...this.state.tones_recorded, prediction]
-      this.setState({tones_recorded: newToneArray})
+      this.setState({tones_recorded: newToneArray},() => {this.checkPhrase()})
     })
-  }*/
+  }
+
+  checkPhrase = () => {
+    let isCorrect = false
+    if(this.state.sentence_finished){
+      isCorrect = this.state.tones_recorded.every((tone,index) => tone === this.state.test_sentence.spoken_tones[index])    
+    }
+    if(isCorrect){
+      this.props.mutationFunction({variables:{deck_id: this.state.test_sentence.deck_id, phrase_order: this.state.test_sentence.phrase_order}})
+    }
+  }
+
 
   componentDidUpdate = (prevProps) => {
     if(prevProps.sentence.phrase_order && prevProps.sentence.phrase_order !== this.props.sentence.phrase_order){
@@ -82,7 +93,7 @@ class Fullsentence extends Component {
           _this.recorder.stopRecording(async function() {
           _this.speechEvents.stop()
           let blob = await _this.recorder.getBlob()
-          //socket.emit('phrase_recorded', {voice_recording: blob});
+          socket.emit('phrase_recorded', {voice_recording: blob});
           _this.howler = new Howl({
             src: [URL.createObjectURL(blob)],
             onplay: function(){
@@ -163,7 +174,7 @@ class Fullsentence extends Component {
   }
 
   removeLeft = () => {
-    //socket.emit('cut_phrase', {begin: parseInt(this.audioProgress.current.min), end: this.audioProgress.current.valueAsNumber, "character_index": this.state.tones_recorded.length});
+    socket.emit('cut_phrase', {begin: parseInt(this.audioProgress.current.min), end: this.audioProgress.current.valueAsNumber, "character_index": this.state.tones_recorded.length});
     const finished = this.state.tones_recorded.length === this.state.test_sentence.spoken_tones.length - 1 
     let _this = this
     this.setState(prevState => ({character_offsets: [...prevState.character_offsets, {begin: parseInt(this.audioProgress.current.min), end: parseInt(this.audioProgress.current.valueAsNumber)}], sentence_finished: finished}), ()=>{

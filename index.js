@@ -118,10 +118,16 @@ async function getPhrasesInDeck(object, params, ctx, resolveInfo) {
   return phrases
 }
 
+async function setPhraseLearned(object, params, ctx, resolveInfo){
+  console.log("SET PHRASE LEARNED")
+  console.log(params)
+}
+
 const schema = gql`
   type Mutation {
   	CreateUser(user_name: String! user_email: String! user_password: String! user_role: String! = "STUDENT"): User
   	Login(user_email: String! user_password: String!): User
+    setPhraseLearned(deck_id: Int, phrase_order: Int): String
   }
 
   type Query {
@@ -166,7 +172,10 @@ const resolvers = {
    	},
    	Login(object, params, ctx, resolveInfo) {
    		return login(object, params, ctx, resolveInfo) 
-   	}
+   	},
+    setPhraseLearned(object, params, ctx, resolveInfo) {
+       return setPhraseLearned(object, params, ctx, resolveInfo) 
+    }
    },
   Query: {
     me(object, params, ctx, resolveInfo){
