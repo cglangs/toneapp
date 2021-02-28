@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
+const asyncLib = require('async')
 const { ACCESS_SECRET, REFRESH_SECRET, getUserId } = require('./utils')
 const app = express();
 
@@ -39,6 +40,15 @@ const deckSchema = new mongoose.Schema({
 });
 
 const Deck = mongoose.model('Deck', deckSchema);
+
+
+const userProgressSchema = new mongoose.Schema({
+  user_id: String,
+  deck_id: Number,
+  phrase_order: Number
+});
+
+const UserProgress = mongoose.model('UserProgress', userProgressSchema);
 
 
 async function signup(object, params, ctx, resolveInfo) {
@@ -79,17 +89,6 @@ async function login(object, params, ctx, resolveInfo) {
   return user
 }
 
-async function getPhraseByDeckIdPhraseOrder(object, params, ctx, resolveInfo) {
-  const phrase =  await Phrase.findOne({ deck_id: params.deck_id , phrase_order: params.phrase_order})
-
-  if (!phrase) {
-    throw new Error('Error')
-  }
-
-  return phrase
-
-}
-
 async function getMe(object, params, ctx, resolveInfo) {
   const user =  await User.findById(params.user_id)
 
@@ -110,17 +109,27 @@ async function getDecks(object, params, ctx, resolveInfo) {
 }
 
 async function getPhrasesInDeck(object, params, ctx, resolveInfo) {
+
   const phrases =  await Phrase.find( { deck_id: params.deck_id } )
   if (!phrases) {
     throw new Error('Error')
   }
 
+  asyncLib.each(phrases, function(phrase, callback) {
+    phrase.is_completed = UserProgress.exists({ deck_id: params.deck_id, phrase_order: phrase.phrase_order, user_id: ctx.req.userId})
+  })
+
   return phrases
 }
 
 async function setPhraseLearned(object, params, ctx, resolveInfo){
-  console.log("SET PHRASE LEARNED")
-  console.log(params)
+
+  UserProgress.create({ user_id: ctx.req.userId, deck_id: params.deck_id, phrase_order: params.phrase_order }, function (err, small) {
+    if (err){
+      throw new Error('Error')
+    }
+  })
+  return ctx.req.userId
 }
 
 const schema = gql`
@@ -132,7 +141,6 @@ const schema = gql`
 
   type Query {
   	me: User
-  	getPhraseByDeckIdPhraseOrder(deck_id: Int phrase_order: Int): Phrase
   	getDecks: [Deck]
   	getPhrasesInDeck(deck_id: Int): [Phrase]
   }
@@ -154,6 +162,7 @@ const schema = gql`
     pinyin_no_tones: [String]
   	written_tones: [String]
   	spoken_tones: [String]
+    is_completed: Boolean
   }
  
   type User {
@@ -186,9 +195,6 @@ const resolvers = {
         }
 
         return user
-    },
-    getPhraseByDeckIdPhraseOrder(object, params, ctx, resolveInfo) {
-      return getPhraseByDeckIdPhraseOrder(object, params, ctx, resolveInfo)    
     },
   	getDecks(object, params, ctx, resolveInfo) {
   	  return getDecks(object, params, ctx, resolveInfo)    

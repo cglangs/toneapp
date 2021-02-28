@@ -9,6 +9,12 @@ import { useParams } from "react-router-dom";
 
 const GET_PHRASE = gql`
 query getPhrase($deck_id: Int!) {
+  me {
+    _id
+    user_name
+    user_role
+    user_password
+  }
   getPhrasesInDeck(deck_id: $deck_id) {
     phrase_order
     full_phrase
@@ -18,6 +24,7 @@ query getPhrase($deck_id: Int!) {
     pinyin_no_tones
     written_tones
     spoken_tones
+    is_completed
   }
 }
 `
@@ -58,11 +65,25 @@ const Learn = (props) => {
     phrase_data["spoken_tones"] = phrase.spoken_tones.join("").replace("0","_")
     phrase_data["pinyin_no_tones"] = phrase.pinyin_no_tones
     phrase_data["phrase_order"] = phrase.phrase_order
+    phrase_data["is_completed"] = phrase.is_completed
+    console.log(phrase_data)
     return phrase_data
   }
 
   function onClickEvent(deck_id, phrase_order){
     redirectToLearnComponent(props, deck_id, phrase_order)
+  }
+
+  function submitCorrect(){
+    updateProgress({variables:{deck_id: parseInt(deckId), phrase_order: parseInt(phraseOrder)}, 
+      update: (store)=> {
+        const data = store.readQuery({ query: GET_PHRASE, variables: { deck_id: parseInt(deckId) } })
+        data.getPhrasesInDeck[phraseOrder]["is_completed"] = true
+        store.writeQuery({
+          query: GET_PHRASE,
+          data
+        })
+     }})    
   }
 
   return(
@@ -71,10 +92,11 @@ const Learn = (props) => {
         <p className={!fullSentenceMode ? "selectedItem": ""} onClick={() => changeMode(false)}>Character by Character</p>
         <p className={fullSentenceMode ? "selectedItem": ""} onClick={() => changeMode(true)}>Full Sentence</p>
       </div>
+      <p>{data.getPhrasesInDeck[phraseOrder - 1]["is_completed"] && "COMPLETE"}</p>
       <div className="toneTrainingInterface">
       <button disabled={phraseOrder === 1 } style={{marginRight: "5%"}}  onClick={() => onClickEvent(deckId,  parseInt(phraseOrder) - 1)}>{"<"}</button>
       <div style={{width: "75%"}}>
-      {fullSentenceMode ? <Fullsentence sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={updateProgress} />: <Characterbycharacter sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={updateProgress}/>}
+      {fullSentenceMode ? <Fullsentence user={data.me} sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={submitCorrect} />: <Characterbycharacter user={data.me} sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={submitCorrect}/>}
       </div>
       <button disabled={phraseOrder === data.getPhrasesInDeck.length } style={{marginLeft: "5%"}} onClick={() => onClickEvent(deckId, parseInt(phraseOrder) + 1)}>{">"}</button>
       </div>

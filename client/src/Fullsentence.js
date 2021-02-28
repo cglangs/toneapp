@@ -50,8 +50,8 @@ class Fullsentence extends Component {
     if(this.state.sentence_finished){
       isCorrect = this.state.tones_recorded.every((tone,index) => tone === this.state.test_sentence.spoken_tones[index])    
     }
-    if(isCorrect){
-      this.props.mutationFunction({variables:{deck_id: this.state.test_sentence.deck_id, phrase_order: this.state.test_sentence.phrase_order}})
+    if(isCorrect && this.props.user && !this.state.test_sentence.is_completed){
+      this.props.mutationFunction()
     }
   }
 

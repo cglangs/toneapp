@@ -25,6 +25,7 @@ query getPhraseList($deck_id: Int!) {
     pinyin_no_tones
     written_tones
     spoken_tones
+    is_completed
   }
 }
 `
@@ -49,6 +50,7 @@ class Dashboard extends Component {
           {data.getPhrasesInDeck.map((phrase)=>
             <div className="menuSubItem" onClick={()=> redirectToLearnComponent(this.props, deck_id, phrase.phrase_order)}>
             <span>{phrase.full_phrase}</span>
+            {phrase.is_completed && (<span>COMPLETE</span>)}
             </div>
           )}
           </div>
