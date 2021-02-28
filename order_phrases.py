@@ -79,7 +79,7 @@ def changeTone(char_list, word_list, written_tones):
 			word_after = None
 			if i>0:
 				word_before = word_list[i-1]
-			if i < len(char_list) -1:
+			if i < len(word_list) -1:
 				word_after = word_list[i+1]
 			result_tone_list[currentCharCount] = yiToneException(word_before,word_after,result_tone_list[currentCharCount])
 		currentCharCount += len(word_list[i])
@@ -95,7 +95,7 @@ def spliceTone(wordWithTone):
 
 
 def get_data():
-	with open('test_phrase.tsv') as csvfile:
+	with open('phrases_edited.tsv') as csvfile:
 		phrase_list=[]
 		sorted_phrase_list = []
 		words_used = set()
