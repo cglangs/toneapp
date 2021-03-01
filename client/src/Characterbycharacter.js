@@ -23,8 +23,8 @@ class Characterbycharacter extends Component {
       currentIndex: 0,
       sentence_finished: false,
       automatic_mode: false,
+      show_pinyin: false
     }
-    console.log("CONSTRUCTED")
     this.state.test_sentence = this.props.sentence
     this.recorder = null
     this.speechEvents = null
@@ -74,12 +74,13 @@ class Characterbycharacter extends Component {
     newAudio.src = URL.createObjectURL(blob)
     const finished = this.state.tones_recorded.length === this.state.test_sentence.spoken_tones.length - 1 && this.state.currentIndex === this.state.test_sentence.spoken_tones.length - 1
     const automatic = this.state.automatic_mode && !finished
+    const showPinyin = finished || this.state.show_pinyin
     const previousIndex = this.state.currentIndex
     const newAudioArray = [...this.state.new_audio]
     newAudioArray.splice(this.state.currentIndex, 1, newAudio)
 
     
-    this.setState({voice_present: false, new_audio: newAudioArray, recording: false, currentIndex: previousIndex + 1, sentence_finished: finished, automatic_mode: automatic}, () =>
+    this.setState({voice_present: false, new_audio: newAudioArray, recording: false, currentIndex: previousIndex + 1, sentence_finished: finished, automatic_mode: automatic, show_pinyin: showPinyin}, () =>
     {
         socket.emit('tone_recorded', {voice_recording: blob, character_index: previousIndex, threshold: this.state.threshold_decibels});
     })
@@ -119,6 +120,10 @@ class Characterbycharacter extends Component {
     this.setState({automatic_mode: !this.state.automatic_mode})
   }
 
+  togglePinyin = () => {
+    this.setState({show_pinyin: !this.state.show_pinyin})
+  }
+
   replayAudio = () => {
     if(this.state.new_audio.length){
       this.state.new_audio[this.state.currentIndex].play()
@@ -135,7 +140,7 @@ class Characterbycharacter extends Component {
 
 
   restartSentence = () => {
-    this.setState({currentIndex: 0, tones_recorded: [], sentence_finished: false, new_audio: [], recording: false, automatic_mode: false})
+    this.setState({currentIndex: 0, tones_recorded: [], sentence_finished: false, new_audio: [], recording: false, automatic_mode: false, show_pinyin: false})
   }
 
   handleCharClick = (index) => {
@@ -175,6 +180,7 @@ class Characterbycharacter extends Component {
 
   render(){
     let btn_class = this.state.recording ? "pressedButton" : "defaultButton";
+    const spoken_tones = this.state.sentence_finished ? this.state.test_sentence.spoken_tones : ''
     return (
       <div>
         {
@@ -182,27 +188,27 @@ class Characterbycharacter extends Component {
             return <audio key={index} id={"replay-" + index}/>
           })
         }
-        <div style={{display: "flex", flexDirection: "column"}}>
+        <div style={{display: "inline-flex", flexDirection: "column"}}>
+          <p style={{"textAlign": "center", height: "1vh"}}>{this.state.show_pinyin && this.state.test_sentence.pinyin}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
-          {this.state.sentence_finished && <p style={{"textAlign": "center"}}>{this.state.test_sentence.pinyin}</p>}
-          {this.state.sentence_finished && this.diplayString(this.state.test_sentence.spoken_tones, false)}
+          {this.diplayString(spoken_tones, false)}
           {this.diplayString(this.state.test_sentence.characters, true, this.state.currentIndex)}
           {this.diplayString(this.state.tones_recorded.join(''), false)}
         </div>
-        <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
-        <button className={btn_class} disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.recordingButtonClick}>
-                  {this.state.recording ? "Stop Recording" : "Record"}
+        <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px", "marginBottom": "20px"}}>
+        <button disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.recordingButtonClick}>
+          <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/record-voice-button.svg" />
         </button>
-         <button  className="defaultButton" disabled={this.state.currentIndex >= this.state.tones_recorded.length} onClick={this.replayAudio}>
-                  Replay
+        <button disabled={this.state.currentIndex >=this.state.tones_recorded.length}  onClick={this.replayAudio}>
+          <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/play-button.svg" />
         </button>
+         <button disabled={this.state.tones_recorded.length === 0} onClick={this.restartSentence}>
+              <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/delete-button.svg" />
+        </button>
+        </div>
          <button  className="defaultButton"  disabled={this.state.test_sentence.spoken_tones[this.state.currentIndex] === '_'} onClick={this.playNativeVoice}>
                   Play Native Speaker Audio
         </button>
-         <button  className="defaultButton" onClick={this.restartSentence}>
-                  Restart Sentence
-        </button>
-        </div>
         <div style={{display: "flex", flexDirection: "column", justifyContent: "center"}}>
           <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.recording ?  "Recording..." : ""}</p>
           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
@@ -211,7 +217,15 @@ class Characterbycharacter extends Component {
               <input type="checkbox" checked={this.state.automatic_mode} onChange={this.toggleMode} />
               <span className="slider round"></span>
             </label>
-           <p style={{fontSize: "14px", "width": "50px", "marginBlockStart": "-1.5em", "marginLeft": "3%"}}>{"Automatic Mode"}</p> 
+           <p style={{fontSize: "14px", "width": "50px", "marginBlockStart": "-1.5em", "marginLeft": "3%"}}>{"Automatic Mode"}</p>
+           </div>
+           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
+           <p style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginRight": "20px", "width": "50px"}}>{"Hide Pinyin"}</p>
+            <label className="switch">
+              <input type="checkbox" checked={this.state.show_pinyin} onChange={this.togglePinyin} />
+              <span className="slider round"></span>
+            </label>
+           <p style={{fontSize: "14px", "width": "50px", "marginBlockStart": "-1.5em", "marginLeft": "3%"}}>{"Show Pinyin"}</p>
           </div>
          </div>
       </div>

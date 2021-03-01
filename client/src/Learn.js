@@ -1,4 +1,4 @@
-import { useState} from 'react'
+import { useState, useRef} from 'react'
 import Characterbycharacter from './Characterbycharacter'
 import Fullsentence from './Fullsentence'
 import { useQuery, useMutation } from  'react-apollo';
@@ -40,6 +40,8 @@ const Learn = (props) => {
   const [fullSentenceMode, setSentenceMode] = useState(false);
 
   const { deckId, phraseOrder } = useParams();
+  const characterByCharacterRef = useRef();
+  const fullSentenceRef = useRef();
 
   const { loading, error, data } = useQuery(GET_PHRASE, {
     variables: {deck_id: parseInt(deckId)}
@@ -66,11 +68,15 @@ const Learn = (props) => {
     phrase_data["pinyin_no_tones"] = phrase.pinyin_no_tones
     phrase_data["phrase_order"] = phrase.phrase_order
     phrase_data["is_completed"] = phrase.is_completed
-    console.log(phrase_data)
     return phrase_data
   }
 
   function onClickEvent(deck_id, phrase_order){
+    if(fullSentenceMode){
+      fullSentenceRef.current.restartSentence()
+    }else{
+      characterByCharacterRef.current.restartSentence()
+    }
     redirectToLearnComponent(props, deck_id, phrase_order)
   }
 
@@ -94,11 +100,15 @@ const Learn = (props) => {
       </div>
       <p>{data.getPhrasesInDeck[phraseOrder - 1]["is_completed"] && "COMPLETE"}</p>
       <div className="toneTrainingInterface">
-      <button disabled={phraseOrder === 1 } style={{marginRight: "5%"}}  onClick={() => onClickEvent(deckId,  parseInt(phraseOrder) - 1)}>{"<"}</button>
+      <button disabled={phraseOrder=== "1" } style={{marginRight: "5%"}}  onClick={() => onClickEvent(deckId,  parseInt(phraseOrder) - 1)}>
+        <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/left-arrow-button.svg" />
+      </button>
       <div style={{width: "75%"}}>
-      {fullSentenceMode ? <Fullsentence user={data.me} sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={submitCorrect} />: <Characterbycharacter user={data.me} sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={submitCorrect}/>}
+      {fullSentenceMode ? <Fullsentence ref={fullSentenceRef} user={data.me} sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={submitCorrect} />: <Characterbycharacter ref={characterByCharacterRef} user={data.me} sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={submitCorrect}/>}
       </div>
-      <button disabled={phraseOrder === data.getPhrasesInDeck.length } style={{marginLeft: "5%"}} onClick={() => onClickEvent(deckId, parseInt(phraseOrder) + 1)}>{">"}</button>
+      <button disabled={parseInt(phraseOrder) === data.getPhrasesInDeck.length } style={{marginLeft: "5%"}} onClick={() => onClickEvent(deckId, parseInt(phraseOrder) + 1)}>
+        <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/right-arrow-button.svg" />
+      </button>
       </div>
     </div>
   )
