@@ -135,7 +135,7 @@ async function getPhrasesInDeck(object, params, ctx, resolveInfo) {
   ])
 
   phrases.forEach((phrase)=> {
-    if(phrase["completion"].length ){
+    if(phrase["completion"].length){
       phrase.is_completed_char = phrase["completion"][0].is_completed_char  
       phrase.is_completed_full = phrase["completion"][0].is_completed_full 
     }

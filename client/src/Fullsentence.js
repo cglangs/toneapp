@@ -59,7 +59,6 @@ class Fullsentence extends Component {
 
   componentDidUpdate = (prevProps) => {
     if(prevProps.sentence.phrase_order && prevProps.sentence.phrase_order !== this.props.sentence.phrase_order){
-     console.log("UPDATE")
       this.setState({test_sentence: this.props.sentence})
     }
   }
@@ -123,8 +122,7 @@ class Fullsentence extends Component {
     });
   }
 
-  setSprites = (minValue, currentValue, maxValue, previousMin) => {
-    console.log(minValue, currentValue, maxValue, previousMin)
+  setSprites = (minValue, currentValue, maxValue) => {
      this.howler._sprite = {
       "before" : [minValue, currentValue-minValue], 
       "after" : [currentValue, maxValue-currentValue],
@@ -176,7 +174,7 @@ class Fullsentence extends Component {
     this.setState({milliseconds: this.audioProgress.current.valueAsNumber})
   }
 
-  removeLeft = () => {
+  getTone = () => {
     socket.emit('cut_phrase', {begin: parseInt(this.audioProgress.current.min), end: parseInt(this.audioProgress.current.valueAsNumber), "character_index": this.state.tones_recorded.length});
     const finished = this.state.tones_recorded.length === this.state.test_sentence.spoken_tones.length - 1
     const showPinyin = finished || this.state.show_pinyin
@@ -238,6 +236,23 @@ class Fullsentence extends Component {
     this.setState({show_pinyin: !this.state.show_pinyin})
   }
 
+  undoLastTone = () => {
+    let character_offsets = [...this.state.character_offsets]
+    const lastRecording = character_offsets.pop()
+    const tones_recorded = [...this.state.tones_recorded]
+    tones_recorded.pop()
+    console.log(character_offsets, lastRecording)
+    let _this = this
+    this.setState(prevState => ({character_offsets: character_offsets, tones_recorded: tones_recorded, milliseconds: lastRecording.begin, sentence_finished: false, show_pinyin: prevState.show_pinyin}), ()=>{
+      _this.setSprites(parseInt(lastRecording.begin), parseInt(lastRecording.begin), parseInt(this.audioProgress.current.max))
+      var audioSlider = document.getElementById("audio-slider")
+      audioSlider.max = this.audioProgress.current.max
+      audioSlider.min = lastRecording.begin
+      audioSlider.value = lastRecording.begin
+    })
+    
+  }
+
   render(){
     //const btn_class = this.state.is_recording ? "pressedButton" : "defaultButton";
     const spoken_tones = this.state.sentence_finished ? this.state.test_sentence.spoken_tones : ''
@@ -269,10 +284,13 @@ class Fullsentence extends Component {
               <button   disabled={btns_disabled} onClick={() => this.replayAudio(strings.ALL)}>
                     <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/replay-button.svg" />
               </button>
+               <button  disabled={btns_disabled} onClick={this.undoLastTone}>
+                    <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/backspace-button.svg" />
+              </button>
                <button  disabled={btns_disabled} onClick={this.restartSentence}>
                     <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/delete-button.svg" />
               </button>
-              <button  disabled={btns_disabled} onClick={this.removeLeft}>
+              <button  disabled={btns_disabled} onClick={this.getTone}>
                     Get Tone 
               </button>
              </div>
