@@ -24,20 +24,25 @@ query getPhrase($deck_id: Int!) {
     pinyin_no_tones
     written_tones
     spoken_tones
-    is_completed
+    is_completed_char
+    is_completed_full
   }
 }
 `
 
 const UPDATE_PROGRESS = gql`
-mutation updateProgress($deck_id: Int!, $phrase_order: Int!) {
-  setPhraseLearned(deck_id: $deck_id, phrase_order: $phrase_order)
+mutation updateProgress($deck_id: Int!, $phrase_order: Int!, $is_completed_char: Boolean!, $is_completed_full: Boolean!) {
+  setPhraseLearned(deck_id: $deck_id, phrase_order: $phrase_order, is_completed_char: $is_completed_char, is_completed_full: $is_completed_full){
+    is_completed_char
+    is_completed_full
+  }
 }
 `
 
 const Learn = (props) => {
+  console.log(props)
 
-  const [fullSentenceMode, setSentenceMode] = useState(false);
+  const [fullSentenceMode, setSentenceMode] = useState(props.location.state.isFullSentenceMode);
 
   const { deckId, phraseOrder } = useParams();
   const characterByCharacterRef = useRef();
@@ -64,10 +69,12 @@ const Learn = (props) => {
     phrase_data["display"] = phrase.full_phrase
     phrase_data["characters"] = phrase.phrase_no_punctuation
     phrase_data["pinyin"] = phrase.pinyin.join(" ")
-    phrase_data["spoken_tones"] = phrase.spoken_tones.join("").replace("0","_")
+    phrase_data["spoken_tones"] = phrase.spoken_tones.join("").replaceAll("5","_")
     phrase_data["pinyin_no_tones"] = phrase.pinyin_no_tones
     phrase_data["phrase_order"] = phrase.phrase_order
-    phrase_data["is_completed"] = phrase.is_completed
+    phrase_data["is_completed_char"] = phrase.is_completed_char
+    phrase_data["is_completed_full"] = phrase.is_completed_full
+    console.log(phrase_data)
     return phrase_data
   }
 
@@ -77,14 +84,15 @@ const Learn = (props) => {
     }else{
       characterByCharacterRef.current.restartSentence()
     }
-    redirectToLearnComponent(props, deck_id, phrase_order)
+    redirectToLearnComponent(props, deck_id, phrase_order, fullSentenceMode)
   }
 
-  function submitCorrect(){
-    updateProgress({variables:{deck_id: parseInt(deckId), phrase_order: parseInt(phraseOrder)}, 
+  function submitCorrect(is_completed_char, is_completed_full){
+    updateProgress({variables:{deck_id: parseInt(deckId), phrase_order: parseInt(phraseOrder), is_completed_char: is_completed_char, is_completed_full: is_completed_full}, 
       update: (store)=> {
         const data = store.readQuery({ query: GET_PHRASE, variables: { deck_id: parseInt(deckId) } })
-        data.getPhrasesInDeck[phraseOrder]["is_completed"] = true
+        data.getPhrasesInDeck[phraseOrder - 1]["is_completed_char"] = is_completed_char
+        data.getPhrasesInDeck[phraseOrder - 1]["is_completed_full"] = is_completed_full
         store.writeQuery({
           query: GET_PHRASE,
           data
@@ -98,7 +106,7 @@ const Learn = (props) => {
         <p className={!fullSentenceMode ? "selectedItem": ""} onClick={() => changeMode(false)}>Character by Character</p>
         <p className={fullSentenceMode ? "selectedItem": ""} onClick={() => changeMode(true)}>Full Sentence</p>
       </div>
-      <p>{data.getPhrasesInDeck[phraseOrder - 1]["is_completed"] && "COMPLETE"}</p>
+      <p>{((data.getPhrasesInDeck[phraseOrder - 1]["is_completed_char"] && !fullSentenceMode) || (data.getPhrasesInDeck[phraseOrder - 1]["is_completed_full"] && fullSentenceMode)) && "COMPLETE"}</p>
       <div className="toneTrainingInterface">
       <button disabled={phraseOrder=== "1" } style={{marginRight: "5%"}}  onClick={() => onClickEvent(deckId,  parseInt(phraseOrder) - 1)}>
         <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/left-arrow-button.svg" />

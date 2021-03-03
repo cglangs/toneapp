@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import {Query} from 'react-apollo';
 import gql from 'graphql-tag';
 import { redirectToLearnComponent} from './utils'
+import { Link} from 'react-router-dom'
+
 
 
 
@@ -25,7 +27,8 @@ query getPhraseList($deck_id: Int!) {
     pinyin_no_tones
     written_tones
     spoken_tones
-    is_completed
+    is_completed_char
+    is_completed_full
   }
 }
 `
@@ -48,9 +51,26 @@ class Dashboard extends Component {
         return (
           <div className="menuSubItemContainer">
           {data.getPhrasesInDeck.map((phrase)=>
-            <div className="menuSubItem" onClick={()=> redirectToLearnComponent(this.props, deck_id, phrase.phrase_order)}>
+            <div className="menuSubItem">
             <span>{phrase.full_phrase}</span>
-            {phrase.is_completed && (<span>COMPLETE</span>)}
+            <Link className="menuSubItemLink"
+              to={{
+                pathname: "/learn/" + deck_id + "/" + phrase.phrase_order,
+                state: { isFullSentenceMode: false }
+              }}
+            >
+            Char Mode
+            </Link>
+            {phrase.is_completed_char && (<span>COMPLETE</span>)}
+            <Link className="menuSubItemLink"
+              to={{
+                pathname: "/learn/" + deck_id + "/" + phrase.phrase_order,
+                state: { isFullSentenceMode: true }
+              }}
+            >
+            Full Mode
+            </Link>
+             {phrase.is_completed_full && (<span>COMPLETE</span>)}           
             </div>
           )}
           </div>

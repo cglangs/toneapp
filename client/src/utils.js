@@ -15,8 +15,11 @@ export const getCookie = (cname) => {
 }
 
 
-export const redirectToLearnComponent = (props, deck_id, phrase_order) => {
+export const redirectToLearnComponent = (props, deck_id, phrase_order, fullSentenceMode) => {
     props.history.push({
-      pathname: '/learn/' + deck_id + '/' + phrase_order
+      pathname: '/learn/' + deck_id + '/' + phrase_order,
+      state:{
+        isFullSentenceMode: fullSentenceMode
+      }
     })
  }

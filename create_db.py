@@ -24,7 +24,7 @@ db = client.tone_db
 phrases = db.phrases
 decks = db.decks
 #intervals = db.intervals
-db.decks.insert_one({"deck_id": 1, "deck_name": "HSK1 Phrases"})
+db.decks.insert_one({"deck_id": 1, "deck_name": "HSK1 Words and Phrases"})
 db.phrases.insert_many(phrase_data)
 #db.intervals.insert_many(intervals_data)
 

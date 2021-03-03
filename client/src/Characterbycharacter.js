@@ -64,8 +64,8 @@ class Characterbycharacter extends Component {
     } else if(this.state.sentence_finished){
       isCorrect = this.state.tones_recorded.every((tone,index) => tone === this.state.test_sentence.spoken_tones[index])    
     }
-    if(isCorrect && this.props.user && !this.state.test_sentence.is_completed){
-      this.props.mutationFunction()
+    if(isCorrect && this.props.user && !this.state.test_sentence.is_completed_char){
+      this.props.mutationFunction(true, this.state.test_sentence.is_completed_full)
     }
 
   }
@@ -149,13 +149,17 @@ class Characterbycharacter extends Component {
     }
   }
 
-  diplayString = (text = '', highlighted= false, highlightIndex = 0) => {
+  diplayString = (text = '', isChars = false) => {
      const parts = text.split('')
      return (
        <span className="String-holder">
          {parts.map((char,index)=> {
-           if(highlighted && index === highlightIndex){
+           if(isChars && index === this.state.currentIndex){
              return <mark key={index} onClick={() => this.handleCharClick(index)}>{char}</mark>
+           } else if(!isChars && index <= this.state.tones_recorded.length -1 && this.state.test_sentence.spoken_tones[index] == this.state.tones_recorded[index]) {
+             return <mark style={{"backgroundColor": "green"}}key={index} onClick={() => this.handleCharClick(index)}>{char}</mark>
+           } else if(!isChars && index <= this.state.tones_recorded.length -1 && this.state.test_sentence.spoken_tones[index] != this.state.tones_recorded[index]) {
+             return <mark style={{"backgroundColor": "red"}}key={index} onClick={() => this.handleCharClick(index)}>{char}</mark>
            } else{
              return <span key={index} onClick={() => this.handleCharClick(index)}>{char}</span>
            }
@@ -191,8 +195,8 @@ class Characterbycharacter extends Component {
         <div style={{display: "inline-flex", flexDirection: "column"}}>
           <p style={{"textAlign": "center", height: "1vh"}}>{this.state.show_pinyin && this.state.test_sentence.pinyin}</p>
           <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
-          {this.diplayString(spoken_tones, false)}
-          {this.diplayString(this.state.test_sentence.characters, true, this.state.currentIndex)}
+          {/*this.diplayString(spoken_tones, false)*/}
+          {this.diplayString(this.state.test_sentence.characters, true)}
           {this.diplayString(this.state.tones_recorded.join(''), false)}
         </div>
         <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px", "marginBottom": "20px"}}>
@@ -206,7 +210,7 @@ class Characterbycharacter extends Component {
               <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/delete-button.svg" />
         </button>
         </div>
-         <button  className="defaultButton"  disabled={this.state.test_sentence.spoken_tones[this.state.currentIndex] === '_'} onClick={this.playNativeVoice}>
+         <button  className="defaultButton"  disabled={this.state.test_sentence.spoken_tones[this.state.currentIndex] === '_' || this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.playNativeVoice}>
                   Play Native Speaker Audio
         </button>
         <div style={{display: "flex", flexDirection: "column", justifyContent: "center"}}>

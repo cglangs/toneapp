@@ -1,11 +1,12 @@
 import csv
 import jieba
 import regex
-import pinyin
-from pypinyin import pinyin as tones, Style
+import get_hsk_words
+#import pinyin
+#from pypinyin import pinyin as tones, Style
 
 jieba.set_dictionary("user_dict.txt")
-punc = "！？。，"
+punc = "！？。，”"
 numbers = ["一","二","三","四","五","六","七","八","九","十"]
 prefix_time_words = ["星期"]
 suffix_time_words = ["年","月","号"]
@@ -90,8 +91,19 @@ def spliceTone(wordWithTone):
 	finalChar = wordWithTone[-1]
 	result = finalChar
 	if(not finalChar.isnumeric()):
-		finalChar = "0" 
+		finalChar = "5" 
 	return finalChar
+
+
+def splitToneString(toneString):
+	result = []
+	nextString = ''
+	for i in range(len(toneString)):
+		nextString += toneString[i]
+		if toneString[i].isnumeric():
+			result.append(nextString)
+			nextString = ''
+	return result
 
 
 def get_data():
@@ -101,6 +113,7 @@ def get_data():
 		words_used = set()
 		readCSV = csv.reader(csvfile, delimiter='\t')
 		phrases = list(readCSV)
+		word_dict = get_hsk_words.get_words()
 
 		for phrase in phrases:
 			new_phrase = {}
@@ -108,8 +121,13 @@ def get_data():
 			new_phrase["phrase_no_punctuation"]=regex.sub(r"[{}]+".format(punc), "", phrase[0])
 			new_phrase["character_list"]= list(new_phrase["phrase_no_punctuation"])
 			new_phrase["word_list"]=list(jieba.cut(new_phrase["phrase_no_punctuation"], cut_all=False, HMM=False))
-			new_phrase["pinyin"]=[pinyin.get(word) for word in new_phrase["word_list"]]
-			toneArray = tones(new_phrase["phrase_no_punctuation"], style=Style.TONE3)
+			#new_phrase["pinyin"]=[pinyin.get(word) for word in new_phrase["word_list"]]
+			#toneArray = tones(new_phrase["phrase_no_punctuation"], style=Style.TONE3)
+			#new_phrase["pinyin_no_tones"] = [tone[:-1] for l in toneArray for tone in l]
+			#new_phrase["written_tones"]= [spliceTone(tone) for l in toneArray for tone in l]
+			#new_phrase["spoken_tones"]=changeTone(new_phrase["character_list"],new_phrase["word_list"],new_phrase["written_tones"])
+			new_phrase["pinyin"]=[ word_dict[word]["pinyin"] for word in new_phrase["word_list"]]
+			toneArray = [splitToneString(word_dict[word]["tones"]) for word in new_phrase["word_list"]]
 			new_phrase["pinyin_no_tones"] = [tone[:-1] for l in toneArray for tone in l]
 			new_phrase["written_tones"]= [spliceTone(tone) for l in toneArray for tone in l]
 			new_phrase["spoken_tones"]=changeTone(new_phrase["character_list"],new_phrase["word_list"],new_phrase["written_tones"])

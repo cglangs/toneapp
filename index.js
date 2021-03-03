@@ -45,7 +45,9 @@ const Deck = mongoose.model('Deck', deckSchema);
 const userProgressSchema = new mongoose.Schema({
   user_id: String,
   deck_id: Number,
-  phrase_order: Number
+  phrase_order: Number,
+  is_completed_char: Boolean,
+  is_completed_full: Boolean
 });
 
 const UserProgress = mongoose.model('UserProgress', userProgressSchema);
@@ -109,34 +111,54 @@ async function getDecks(object, params, ctx, resolveInfo) {
 }
 
 async function getPhrasesInDeck(object, params, ctx, resolveInfo) {
+ const phrases =  await Phrase.aggregate([
+   {$match: {deck_id: params.deck_id}},
+   {
+      $lookup:
+         {
+           from: "userprogresses",
+           let: { phrase_order: "$phrase_order", deck_id: "$deck_id"},
+           pipeline: [
+              { $match:
+                 { $expr:
+                    { $and:
+                       [
+                         { $eq: [ "$$phrase_order",  "$phrase_order" ] },
+                         { $eq: [ "$$deck_id",  "$deck_id" ] },
+                         { $eq: [ ctx.req.userId,  "$user_id" ] }                       ]
+                    }
+                 }
+              }, {$project: {"is_completed_char": 1, "is_completed_full": 1}}           ],
+           as: "completion"
+         }
+    }
+  ])
 
-  const phrases =  await Phrase.find( { deck_id: params.deck_id } )
-  if (!phrases) {
-    throw new Error('Error')
-  }
-
-  asyncLib.each(phrases, function(phrase, callback) {
-    phrase.is_completed = UserProgress.exists({ deck_id: params.deck_id, phrase_order: phrase.phrase_order, user_id: ctx.req.userId})
+  phrases.forEach((phrase)=> {
+    if(phrase["completion"].length ){
+      phrase.is_completed_char = phrase["completion"][0].is_completed_char  
+      phrase.is_completed_full = phrase["completion"][0].is_completed_full 
+    }
   })
-
   return phrases
 }
 
 async function setPhraseLearned(object, params, ctx, resolveInfo){
-
-  UserProgress.create({ user_id: ctx.req.userId, deck_id: params.deck_id, phrase_order: params.phrase_order }, function (err, small) {
+  let updateObject = {is_completed_char: params.is_completed_char, is_completed_full: params.is_completed_full}
+  console.log(ctx.req.userId)
+  const test =  await UserProgress.findOneAndUpdate({ user_id: ctx.req.userId, deck_id: params.deck_id, phrase_order: params.phrase_order }, updateObject, {upsert: true}, function (err, small) {
     if (err){
       throw new Error('Error')
     }
   })
-  return ctx.req.userId
+  return updateObject
 }
 
 const schema = gql`
   type Mutation {
   	CreateUser(user_name: String! user_email: String! user_password: String! user_role: String! = "STUDENT"): User
   	Login(user_email: String! user_password: String!): User
-    setPhraseLearned(deck_id: Int, phrase_order: Int): String
+    setPhraseLearned(deck_id: Int, phrase_order: Int, is_completed_char: Boolean, is_completed_full: Boolean): Progress
   }
 
   type Query {
@@ -162,7 +184,13 @@ const schema = gql`
     pinyin_no_tones: [String]
   	written_tones: [String]
   	spoken_tones: [String]
-    is_completed: Boolean
+    is_completed_char: Boolean
+    is_completed_full: Boolean
+  }
+
+  type Progress {
+    is_completed_char: Boolean
+    is_completed_full: Boolean    
   }
  
   type User {

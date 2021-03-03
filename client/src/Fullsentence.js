@@ -51,8 +51,8 @@ class Fullsentence extends Component {
     if(this.state.sentence_finished){
       isCorrect = this.state.tones_recorded.every((tone,index) => tone === this.state.test_sentence.spoken_tones[index])    
     }
-    if(isCorrect && this.props.user && !this.state.test_sentence.is_completed){
-      this.props.mutationFunction()
+    if(isCorrect && this.props.user && !this.state.test_sentence.is_completed_full){
+      this.props.mutationFunction(this.state.test_sentence.is_completed_char, true)
     }
   }
 
@@ -177,11 +177,11 @@ class Fullsentence extends Component {
   }
 
   removeLeft = () => {
-    socket.emit('cut_phrase', {begin: parseInt(this.audioProgress.current.min), end: this.audioProgress.current.valueAsNumber, "character_index": this.state.tones_recorded.length});
+    socket.emit('cut_phrase', {begin: parseInt(this.audioProgress.current.min), end: parseInt(this.audioProgress.current.valueAsNumber), "character_index": this.state.tones_recorded.length});
     const finished = this.state.tones_recorded.length === this.state.test_sentence.spoken_tones.length - 1
     const showPinyin = finished || this.state.show_pinyin
     let _this = this
-    this.setState(prevState => ({character_offsets: [...prevState.character_offsets, {begin: parseInt(this.audioProgress.current.min), end: parseInt(this.audioProgress.current.valueAsNumber)}], sentence_finished: finished, show_pinyin: showPinyin}), ()=>{
+    this.setState(prevState => ({character_offsets: [...prevState.character_offsets, {begin: parseInt(this.audioProgress.current.min), end: parseInt(this.audioProgress.current.valueAsNumber) - parseInt(this.audioProgress.current.min)}], sentence_finished: finished, show_pinyin: showPinyin}), ()=>{
       _this.setSprites(parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.valueAsNumber), parseInt(this.audioProgress.current.max))
       var audioSlider = document.getElementById("audio-slider")
       audioSlider.max = this.audioProgress.current.max
@@ -197,13 +197,17 @@ class Fullsentence extends Component {
     }
   }
 
-  diplayString = (text = '', highlighted= false, highlightIndex = 0) => {
+  diplayString = (text = '', isChars = false) => {
      const parts = text.split('')
      return (
        <span className="String-holder">
          {parts.map((char,index)=> {
-           if(highlighted && index === highlightIndex){
+           if(isChars && index === this.state.currentIndex){
              return <mark key={index} onClick={() => this.handleCharClick(index)}>{char}</mark>
+           } else if(!isChars && index <= this.state.tones_recorded.length -1 && this.state.test_sentence.spoken_tones[index] == this.state.tones_recorded[index]) {
+             return <mark style={{"backgroundColor": "green"}}key={index} onClick={() => this.handleCharClick(index)}>{char}</mark>
+           } else if(!isChars && index <= this.state.tones_recorded.length -1 && this.state.test_sentence.spoken_tones[index] != this.state.tones_recorded[index]) {
+             return <mark style={{"backgroundColor": "red"}}key={index} onClick={() => this.handleCharClick(index)}>{char}</mark>
            } else{
              return <span key={index} onClick={() => this.handleCharClick(index)}>{char}</span>
            }
@@ -238,6 +242,7 @@ class Fullsentence extends Component {
     //const btn_class = this.state.is_recording ? "pressedButton" : "defaultButton";
     const spoken_tones = this.state.sentence_finished ? this.state.test_sentence.spoken_tones : ''
     const btns_disabled = this.howler == null
+    console.log(this.state)
     return (
           <div>
             <audio id="replay"/>
@@ -245,7 +250,7 @@ class Fullsentence extends Component {
               <p style={{"textAlign": "center", height: "1vh"}}>{this.state.show_pinyin && this.state.test_sentence.pinyin}</p>
               <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
               {this.diplayString(spoken_tones, false)}
-              {this.diplayString(this.state.test_sentence.characters, true, this.state.currentIndex)}
+              {this.diplayString(this.state.test_sentence.characters, true)}
               {this.diplayString(this.state.tones_recorded.join(''), false)}
             </div>
             <p style={{"height": "3vh"}}>{this.state.voice_present ? "Voice heard" : this.state.is_recording ?  "Recording..." : ""}</p>
