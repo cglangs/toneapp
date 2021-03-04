@@ -263,7 +263,8 @@ class Fullsentence extends Component {
             <audio id="replay"/>
             <div style={{display: "inline-flex", flexDirection: "column"}}>
               <p style={{"textAlign": "center", height: "1vh"}}>{this.state.show_pinyin && this.state.test_sentence.pinyin}</p>
-              <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
+              <span className={"circle " + (this.props.isComplete() ? "" : "hide")}/>  
+              <span style={{"textAlign": "center"}}>{this.state.test_sentence.display}</span>
               {this.diplayString(spoken_tones, false)}
               {this.diplayString(this.state.test_sentence.characters, true)}
               {this.diplayString(this.state.tones_recorded.join(''), false)}

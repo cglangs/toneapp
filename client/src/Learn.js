@@ -100,19 +100,23 @@ const Learn = (props) => {
      }})    
   }
 
+  function checkComplete(){
+    return ((data.getPhrasesInDeck[phraseOrder - 1]["is_completed_char"] && !fullSentenceMode) || (data.getPhrasesInDeck[phraseOrder - 1]["is_completed_full"] && fullSentenceMode))
+  }
+
   return(
     <div className="LearnContainer">
       <div className="Navbar">
         <p className={!fullSentenceMode ? "selectedItem": ""} onClick={() => changeMode(false)}>Character by Character</p>
         <p className={fullSentenceMode ? "selectedItem": ""} onClick={() => changeMode(true)}>Full Sentence</p>
       </div>
-      <p>{((data.getPhrasesInDeck[phraseOrder - 1]["is_completed_char"] && !fullSentenceMode) || (data.getPhrasesInDeck[phraseOrder - 1]["is_completed_full"] && fullSentenceMode)) && "COMPLETE"}</p>
+      
       <div className="toneTrainingInterface">
       <button disabled={phraseOrder=== "1" } style={{marginRight: "5%"}}  onClick={() => onClickEvent(deckId,  parseInt(phraseOrder) - 1)}>
         <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/left-arrow-button.svg" />
       </button>
       <div style={{width: "75%"}}>
-      {fullSentenceMode ? <Fullsentence ref={fullSentenceRef} user={data.me} sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={submitCorrect} />: <Characterbycharacter ref={characterByCharacterRef} user={data.me} sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={submitCorrect}/>}
+      {fullSentenceMode ? <Fullsentence ref={fullSentenceRef} isComplete={checkComplete} user={data.me} sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={submitCorrect} />: <Characterbycharacter ref={characterByCharacterRef} isComplete={checkComplete} user={data.me} sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={submitCorrect}/>}
       </div>
       <button disabled={parseInt(phraseOrder) === data.getPhrasesInDeck.length } style={{marginLeft: "5%"}} onClick={() => onClickEvent(deckId, parseInt(phraseOrder) + 1)}>
         <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/right-arrow-button.svg" />

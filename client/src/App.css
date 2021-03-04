@@ -93,6 +93,18 @@
   overflow: scroll;
 }
 
+.circle {
+    background: green;
+    border-radius: 50%;
+    width: 2vh;
+    height: 2vh;
+    margin-top: 2vh;
+}
+
+.hide {
+  visibility: hidden
+}
+
 .toneTrainingInterface {
   display: flex;
   justify-content: center;
@@ -100,6 +112,8 @@
 }
 
 .menuSubItem {
+  display: flex;
+  flex-direction: row;
   margin-left: 10%;
   border-radius: 10px;
   box-shadow: 2px 2px 5px rgba(0,0,0,0.5), inset 5px 5px 8px rgba(0,0,0,0.5);
@@ -113,6 +127,7 @@
 
 .menuSubItemLink {
   margin-left: 5vh;
+  width: 15%;
 }
 
 
@@ -165,6 +180,29 @@
   height: 25px;
   text-align: left;
   margin-bottom: 1vh;
+}
+
+.charByChar{
+  margin-top: 3vh;
+}
+
+.tooltip {
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
 }
 
 .String-holder span{

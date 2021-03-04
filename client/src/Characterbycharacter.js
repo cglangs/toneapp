@@ -152,7 +152,7 @@ class Characterbycharacter extends Component {
   diplayString = (text = '', isChars = false) => {
      const parts = text.split('')
      return (
-       <span className="String-holder">
+       <span className="String-holder charByChar">
          {parts.map((char,index)=> {
            if(isChars && index === this.state.currentIndex){
              return <mark key={index} onClick={() => this.handleCharClick(index)}>{char}</mark>
@@ -194,14 +194,16 @@ class Characterbycharacter extends Component {
         }
         <div style={{display: "inline-flex", flexDirection: "column"}}>
           <p style={{"textAlign": "center", height: "1vh"}}>{this.state.show_pinyin && this.state.test_sentence.pinyin}</p>
-          <p style={{"textAlign": "center"}}>{this.state.test_sentence.display}</p>
+          <span className={"circle " + (this.props.isComplete() ? "" : "hide")}/>  
+          <span style={{"textAlign": "center"}}>{this.state.test_sentence.display}</span>
           {/*this.diplayString(spoken_tones, false)*/}
           {this.diplayString(this.state.test_sentence.characters, true)}
           {this.diplayString(this.state.tones_recorded.join(''), false)}
         </div>
         <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px", "marginBottom": "20px"}}>
-        <button disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.recordingButtonClick}>
+        <button className="tooltip" disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.recordingButtonClick}>
           <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/record-voice-button.svg" />
+          <span class="tooltiptext">Record Voice</span>
         </button>
         <button disabled={this.state.currentIndex >=this.state.tones_recorded.length}  onClick={this.replayAudio}>
           <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/play-button.svg" />

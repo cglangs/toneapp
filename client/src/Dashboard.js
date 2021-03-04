@@ -52,7 +52,7 @@ class Dashboard extends Component {
           <div className="menuSubItemContainer">
           {data.getPhrasesInDeck.map((phrase)=>
             <div className="menuSubItem">
-            <span>{phrase.full_phrase}</span>
+            <span style={{ display: "inlineBlock", minWidth: "50%"}}>{phrase.full_phrase}</span>
             <Link className="menuSubItemLink"
               to={{
                 pathname: "/learn/" + deck_id + "/" + phrase.phrase_order,
@@ -61,7 +61,7 @@ class Dashboard extends Component {
             >
             Char Mode
             </Link>
-            {phrase.is_completed_char && (<span>COMPLETE</span>)}
+            <span className={"circle " + (phrase.is_completed_char ? "" : "hide")}/>
             <Link className="menuSubItemLink"
               to={{
                 pathname: "/learn/" + deck_id + "/" + phrase.phrase_order,
@@ -70,7 +70,7 @@ class Dashboard extends Component {
             >
             Full Mode
             </Link>
-             {phrase.is_completed_full && (<span>COMPLETE</span>)}           
+             <span className={"circle " + (phrase.is_completed_char ? "" : "hide")}/>     
             </div>
           )}
           </div>
