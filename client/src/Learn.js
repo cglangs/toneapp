@@ -72,8 +72,8 @@ const Learn = (props) => {
     phrase_data["spoken_tones"] = phrase.spoken_tones.join("").replaceAll("5","_")
     phrase_data["pinyin_no_tones"] = phrase.pinyin_no_tones
     phrase_data["phrase_order"] = phrase.phrase_order
-    phrase_data["is_completed_char"] = phrase.is_completed_char
-    phrase_data["is_completed_full"] = phrase.is_completed_full
+    phrase_data["is_completed_char"] = phrase.is_completed_char || false
+    phrase_data["is_completed_full"] = phrase.is_completed_full || false
     console.log(phrase_data)
     return phrase_data
   }
@@ -112,14 +112,16 @@ const Learn = (props) => {
       </div>
       
       <div className="toneTrainingInterface">
-      <button disabled={phraseOrder=== "1" } style={{marginRight: "5%"}}  onClick={() => onClickEvent(deckId,  parseInt(phraseOrder) - 1)}>
+      <button className="tooltip" disabled={phraseOrder=== "1" } style={{marginRight: "5%"}}  onClick={() => onClickEvent(deckId,  parseInt(phraseOrder) - 1)}>
         <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/left-arrow-button.svg" />
+        <span class="tooltiptext">Previous phrase</span>
       </button>
       <div style={{width: "75%"}}>
       {fullSentenceMode ? <Fullsentence ref={fullSentenceRef} isComplete={checkComplete} user={data.me} sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={submitCorrect} />: <Characterbycharacter ref={characterByCharacterRef} isComplete={checkComplete} user={data.me} sentence={getPhraseDetails(data.getPhrasesInDeck[phraseOrder - 1])} mutationFunction={submitCorrect}/>}
       </div>
-      <button disabled={parseInt(phraseOrder) === data.getPhrasesInDeck.length } style={{marginLeft: "5%"}} onClick={() => onClickEvent(deckId, parseInt(phraseOrder) + 1)}>
+      <button className="tooltip" disabled={parseInt(phraseOrder) === data.getPhrasesInDeck.length } style={{marginLeft: "5%"}} onClick={() => onClickEvent(deckId, parseInt(phraseOrder) + 1)}>
         <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/right-arrow-button.svg" />
+        <span style={{"left": "inherit", "right": "105%"}} class="tooltiptext">Next phrase</span>
       </button>
       </div>
     </div>

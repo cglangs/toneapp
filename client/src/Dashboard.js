@@ -53,22 +53,24 @@ class Dashboard extends Component {
           {data.getPhrasesInDeck.map((phrase)=>
             <div className="menuSubItem">
             <span style={{ display: "inlineBlock", minWidth: "50%"}}>{phrase.full_phrase}</span>
-            <Link className="menuSubItemLink"
+            <Link className="menuSubItemLink tooltip"
               to={{
                 pathname: "/learn/" + deck_id + "/" + phrase.phrase_order,
                 state: { isFullSentenceMode: false }
               }}
             >
             Char Mode
+            <span class="tooltiptext">Practice on each character separately</span>
             </Link>
             <span className={"circle " + (phrase.is_completed_char ? "" : "hide")}/>
-            <Link className="menuSubItemLink"
+            <Link className="menuSubItemLink tooltip"
               to={{
                 pathname: "/learn/" + deck_id + "/" + phrase.phrase_order,
                 state: { isFullSentenceMode: true }
               }}
             >
             Full Mode
+            <span class="tooltiptext">Practice on entire phrase</span>
             </Link>
              <span className={"circle " + (phrase.is_completed_char ? "" : "hide")}/>     
             </div>

@@ -187,6 +187,7 @@
 }
 
 .tooltip {
+  position: relative;
 }
 
 .tooltip .tooltiptext {
@@ -196,7 +197,8 @@
   color: #fff;
   text-align: center;
   border-radius: 6px;
-  padding: 5px 0;
+  left: 105%;
+  top: -5px;
   position: absolute;
   z-index: 1;
 }

@@ -220,12 +220,14 @@ class Fullsentence extends Component {
       <div style={{"height": "3vh"}}>
       {shouldDisplay && (
         <div>
-          <button  className="defaultButton" onClick={() => this.replayAudio(strings.BEFORE)}>
+          <button className="defaultButton tooltip" onClick={() => this.replayAudio(strings.BEFORE)}>
             <img style={{"padding": "0","height":  "3vh", "width":  "2vw"}}src="/play-button.svg" />
+            <span class="tooltiptext">Play audio left of cursor</span>
           </button>
           <input style={{"width": "65%"}} id="audio-slider" ref={this.audioProgress} type="range" onChange={this.updateTime} />
-          <button  className="defaultButton" onClick={() => this.replayAudio(strings.AFTER)}>
+          <button  className="defaultButton tooltip" onClick={() => this.replayAudio(strings.AFTER)}>
             <img style={{"padding": "0","height":  "3vh", "width":  "2vw"}}src="/play-button.svg" />
+            <span class="tooltiptext">Play audio right of cursor</span>
           </button> 
         </div>)}
       </div>
@@ -265,7 +267,7 @@ class Fullsentence extends Component {
               <p style={{"textAlign": "center", height: "1vh"}}>{this.state.show_pinyin && this.state.test_sentence.pinyin}</p>
               <span className={"circle " + (this.props.isComplete() ? "" : "hide")}/>  
               <span style={{"textAlign": "center"}}>{this.state.test_sentence.display}</span>
-              {this.diplayString(spoken_tones, false)}
+              {/*this.diplayString(spoken_tones, false)*/}
               {this.diplayString(this.state.test_sentence.characters, true)}
               {this.diplayString(this.state.tones_recorded.join(''), false)}
             </div>
@@ -273,25 +275,32 @@ class Fullsentence extends Component {
             <p style={{"height": "3vh"}}>{this.state.milliseconds ? (this.state.milliseconds/1000) + " Seconds" : null}</p>
             {this.displaySlider(this.howler != null)}
             <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "4vh"}}>
-              <button style={{backgroundColor: this.state.is_recording ? "darkgray": "white"}} onClick={this.startRecording}>
+              <button className="tooltip" style={{backgroundColor: this.state.is_recording ? "darkgray": "white"}} onClick={this.startRecording}>
                 <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/record-voice-button.svg" />
+                <span class="tooltiptext">Record voice</span>
               </button>
-              <button disabled={btns_disabled}  onClick={()=> this.setState({is_playing: true}, ()=>{this.playWithSlider()})}>
+              <button className="tooltip" disabled={btns_disabled}  onClick={()=> this.setState({is_playing: true}, ()=>{this.playWithSlider()})}>
                 <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/play-button.svg" />
+                <span class="tooltiptext">Play audio (cursor will advance)</span>
               </button>
-              <button  disabled={btns_disabled || !this.state.is_playing} onClick={this.pauseAudio}>
+              <button  className="tooltip" disabled={btns_disabled || !this.state.is_playing} onClick={this.pauseAudio}>
                     <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/pause-button.svg" />
+                    <span class="tooltiptext">Pause audio (cursor will stop)</span>
               </button>
-              <button   disabled={btns_disabled} onClick={() => this.replayAudio(strings.ALL)}>
+              <button   className="tooltip" disabled={btns_disabled} onClick={() => this.replayAudio(strings.ALL)}>
                     <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/replay-button.svg" />
+                    <span class="tooltiptext">Play entire remaining audio(cursor will not move)</span>
               </button>
-               <button  disabled={btns_disabled} onClick={this.undoLastTone}>
+               <button  className="tooltip" disabled={btns_disabled} onClick={this.undoLastTone}>
                     <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/backspace-button.svg" />
+                    <span class="tooltiptext">Undo last audio cut</span>
               </button>
-               <button  disabled={btns_disabled} onClick={this.restartSentence}>
+               <button  className="tooltip" disabled={btns_disabled} onClick={this.restartSentence}>
                     <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/delete-button.svg" />
+                    <span class="tooltiptext">Restart sentence</span>
               </button>
-              <button  disabled={btns_disabled} onClick={this.getTone}>
+              <button  className="tooltip" disabled={btns_disabled} onClick={this.getTone}>
+                    <span class="tooltiptext">Get tone of audio left of the cursor</span>
                     Get Tone 
               </button>
              </div>

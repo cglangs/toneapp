@@ -203,13 +203,15 @@ class Characterbycharacter extends Component {
         <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px", "marginBottom": "20px"}}>
         <button className="tooltip" disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.recordingButtonClick}>
           <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/record-voice-button.svg" />
-          <span class="tooltiptext">Record Voice</span>
+          <span class="tooltiptext">Record voice</span>
         </button>
-        <button disabled={this.state.currentIndex >=this.state.tones_recorded.length}  onClick={this.replayAudio}>
+        <button className="tooltip" disabled={this.state.currentIndex >=this.state.tones_recorded.length}  onClick={this.replayAudio}>
           <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/play-button.svg" />
+          <span class="tooltiptext">Replay recording for selected character</span>
         </button>
-         <button disabled={this.state.tones_recorded.length === 0} onClick={this.restartSentence}>
+         <button className="tooltip" disabled={this.state.tones_recorded.length === 0} onClick={this.restartSentence}>
               <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/delete-button.svg" />
+              <span class="tooltiptext">Restart phrase</span>
         </button>
         </div>
          <button  className="defaultButton"  disabled={this.state.test_sentence.spoken_tones[this.state.currentIndex] === '_' || this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.playNativeVoice}>
@@ -218,12 +220,16 @@ class Characterbycharacter extends Component {
         <div style={{display: "flex", flexDirection: "column", justifyContent: "center"}}>
           <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.recording ?  "Recording..." : ""}</p>
           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
-            <p style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginRight": "20px", "width": "50px"}}>{"Manual Mode"}</p> 
+            <p className="tooltip" style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginRight": "20px", "width": "50px"}}>{"Manual Mode"}
+            <span class="tooltiptext">User must press the record button for each character</span>
+            </p> 
             <label className="switch">
               <input type="checkbox" checked={this.state.automatic_mode} onChange={this.toggleMode} />
               <span className="slider round"></span>
             </label>
-           <p style={{fontSize: "14px", "width": "50px", "marginBlockStart": "-1.5em", "marginLeft": "3%"}}>{"Automatic Mode"}</p>
+           <p className="tooltip" style={{fontSize: "14px", "width": "50px", "marginBlockStart": "-1.5em", "marginLeft": "3%"}}>{"Automatic Mode"}
+           <span class="tooltiptext">Recording will restart automatically after selected chaaracter changes</span>
+           </p>
            </div>
            <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
            <p style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginRight": "20px", "width": "50px"}}>{"Hide Pinyin"}</p>
