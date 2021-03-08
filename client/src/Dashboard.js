@@ -60,7 +60,7 @@ class Dashboard extends Component {
               }}
             >
             Char Mode
-            <span class="tooltiptext">Practice on each character separately</span>
+            <span class="tooltiptext">Practice each character separately</span>
             </Link>
             <span className={"circle " + (phrase.is_completed_char ? "" : "hide")}/>
             <Link className="menuSubItemLink tooltip"
@@ -70,7 +70,7 @@ class Dashboard extends Component {
               }}
             >
             Full Mode
-            <span class="tooltiptext">Practice on entire phrase</span>
+            <span class="tooltiptext">Practice entire phrase</span>
             </Link>
              <span className={"circle " + (phrase.is_completed_char ? "" : "hide")}/>     
             </div>

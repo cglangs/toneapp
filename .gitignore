@@ -4,9 +4,9 @@ spectrograms
 models
 records
 notes.txt
-node_modules
+server/node_modules
 get_duration.py
 test.py
 test_spectrograms
-phrases.tsv
-phrases_edited.tsv
+mongo/phrases.tsv
+mongo/phrases_edited.tsv

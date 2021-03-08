@@ -1,0 +1,25 @@
+version: '3'
+services:
+  web:
+    build: ./server/
+
+    # Mapping of container port to host
+    
+    ports:
+      - "3003:3003"
+    # Mount volume 
+
+    # Link database container to app container 
+    # for rechability.
+    links:
+      - mongodb
+    depends_on:
+      - mongodb
+    restart: always
+
+  mongodb:
+
+    # image to fetch from docker hub
+    image: mongo:4.0.8
+    ports:
+      - 27017:27017

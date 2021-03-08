@@ -1,0 +1,11 @@
+Flask==1.1.2
+numpy==1.19.5
+jieba==0.42.1
+matplotlib==3.3.3
+PyAudio==0.2.11
+pydub==0.24.1
+fastai==2.2.5
+pymongo==3.11.3
+Flask_SocketIO==5.0.1
+librosa==0.8.0
+regex==2020.11.13
