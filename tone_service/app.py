@@ -1,17 +1,14 @@
 import pyaudio
-import math
-import struct
 import wave
-import time
 import os
 import numpy as np
 import librosa, librosa.display
 import matplotlib.pyplot as plt
 import numpy as np
 from flask import Flask
+from flask import request
 from flask_socketio import SocketIO, send
 from pydub import AudioSegment
-from pydub.playback import play
 from fastai.vision.all import *
 device = torch.device('cpu')
 import ssl
@@ -59,20 +56,20 @@ socketIo = SocketIO(app, cors_allowed_origins="*")
 
 app.debug = True
 
-app.host = 'localhost'
+app.host = '0.0.0.0'
 
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
 
-f_name_directory = './records'
+f_name_directory = './tone_records'
+phrase_directory = './phrase_records'
 p = pyaudio.PyAudio()
-
-
 
 def getTone(filename, characterIndex):
 	signal, sr = librosa.load(filename)
+	os.remove(filename)
 	signal_t, index = librosa.effects.trim(y=signal[100:], top_db=20)
 	fig = plt.figure(figsize=[0.72,0.72])
 	ax = fig.add_subplot(111)
@@ -86,16 +83,15 @@ def getTone(filename, characterIndex):
 	plt.close('all')
 
 	prediction = learn.predict(spectrofilename)
+	os.remove(spectrofilename)
+
 	predictionDict = {}
 	predictionDict["prediction"] = prediction[0]
 	predictionDict["index"] = characterIndex
 	socketIo.emit('predicted_tone', predictionDict)	
 
 def save_tone(data):
-	n_files = len(os.listdir(f_name_directory))
-
-	filename = os.path.join(f_name_directory, '{}.wav'.format(n_files))
-
+	filename = os.path.join(f_name_directory, '{}.wav'.format(request.sid))
 	wf = wave.open(filename, 'wb')
 	wf.setnchannels(CHANNELS)
 	wf.setsampwidth(p.get_sample_size(FORMAT))
@@ -103,10 +99,9 @@ def save_tone(data):
 	wf.writeframes(data["voice_recording"])
 	wf.close()
 	getTone(filename, data["character_index"])
-	#os.remove(filename)
 
 def save_phrase(data):
-	filename = 'full_recording.wav'
+	filename = os.path.join(phrase_directory, '{}.wav'.format(request.sid))
 	wf = wave.open(filename, 'wb')
 	wf.setnchannels(CHANNELS)
 	wf.setsampwidth(p.get_sample_size(FORMAT))
@@ -114,18 +109,22 @@ def save_phrase(data):
 	wf.writeframes(data["voice_recording"])
 	wf.close()
 	rec = AudioSegment.from_wav(filename)
-	play(rec)
 
 def cut_phrase(data):
-	source_filename = 'full_recording.wav'
+	source_filename = os.path.join(phrase_directory, '{}.wav'.format(request.sid))
 	newAudio = AudioSegment.from_wav(source_filename)
 	newAudio = newAudio[data["begin"]:data["end"]]
-	n_files = len(os.listdir(f_name_directory))
-	filename = os.path.join(f_name_directory, '{}.wav'.format(n_files))
+	filename = os.path.join(f_name_directory, '{}.wav'.format(request.sid))
 	newAudio.export(filename, format="wav")
 	getTone(filename, data["character_index"])
 
-
+@socketIo.on("disconnect")
+def disconnect():
+	try:
+	    os.remove(os.path.join(phrase_directory, '{}.wav'.format(request.sid)))
+	except OSError:
+	    pass
+	return None
 
 @socketIo.on("tone_recorded")
 def handleVoice(data):

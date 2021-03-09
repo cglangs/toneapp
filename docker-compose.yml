@@ -2,24 +2,26 @@ version: '3'
 services:
   web:
     build: ./server/
-
-    # Mapping of container port to host
-    
     ports:
-      - "3003:3003"
-    # Mount volume 
-
-    # Link database container to app container 
-    # for rechability.
+      - 3003:3003
     links:
-      - mongodb
+      - db
+      - tone_service
     depends_on:
-      - mongodb
-    restart: always
-
-  mongodb:
-
-    # image to fetch from docker hub
+      - db
+      - mongo_seed
+      - tone_service
+  tone_service:
+    build: ./tone_service/
+    ports:
+      - 5000:5000
+  mongo_seed:
+    build: ./mongo_seed/
+    links:
+      - db
+    depends_on:
+      - db
+  db:
     image: mongo:4.0.8
     ports:
       - 27017:27017

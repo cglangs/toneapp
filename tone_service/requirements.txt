@@ -1,0 +1,6 @@
+Flask==1.1.2
+matplotlib==3.3.3
+PyAudio==0.2.11
+pydub==0.24.1
+Flask_SocketIO==5.0.1
+librosa==0.8.0

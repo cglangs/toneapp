@@ -1,7 +1,7 @@
 import order_phrases
 from pymongo import MongoClient
 
-client = MongoClient()
+client = MongoClient('mongodb://db:27017/')
 #client.drop_database('tone_db')
 '''
 intervals_data = [

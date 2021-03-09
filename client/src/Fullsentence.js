@@ -11,7 +11,7 @@ import './App.css';
 import './Switch.css';
 
 
-let endpoint = "http://localhost:5000"
+let endpoint = "http://tone_service:5000"
 let socket = io.connect(`${endpoint}`)
 class Fullsentence extends Component {
 

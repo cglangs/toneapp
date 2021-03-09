@@ -21,11 +21,12 @@
     "react-scripts": "4.0.1",
     "recordrtc": "^5.6.1",
     "sfmediastream": "^1.2.1",
+    "socket.io-client": "^3.1.2",
     "web-vitals": "^0.2.4"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && mv build ../public",
+    "build": "react-scripts build && mv build ../server/public",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
