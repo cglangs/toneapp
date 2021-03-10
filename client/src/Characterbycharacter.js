@@ -8,7 +8,7 @@ import './App.css';
 import './Switch.css';
 
 
-let endpoint = "http://tone_service:5000"
+let endpoint = "http://localhost:5000"
 let socket = io.connect(`${endpoint}`)
 class Characterbycharacter extends Component {
 
@@ -203,15 +203,15 @@ class Characterbycharacter extends Component {
         <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px", "marginBottom": "20px"}}>
         <button className="tooltip" disabled={this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.recordingButtonClick}>
           <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/record-voice-button.svg" />
-          <span class="tooltiptext">Record voice</span>
+          <span className="tooltiptext">Record voice</span>
         </button>
         <button className="tooltip" disabled={this.state.currentIndex >=this.state.tones_recorded.length}  onClick={this.replayAudio}>
           <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/play-button.svg" />
-          <span class="tooltiptext">Replay recording for selected character</span>
+          <span className="tooltiptext">Replay recording for selected character</span>
         </button>
          <button className="tooltip" disabled={this.state.tones_recorded.length === 0} onClick={this.restartSentence}>
               <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/delete-button.svg" />
-              <span class="tooltiptext">Restart phrase</span>
+              <span className="tooltiptext">Restart phrase</span>
         </button>
         </div>
          <button  className="defaultButton"  disabled={this.state.test_sentence.spoken_tones[this.state.currentIndex] === '_' || this.state.currentIndex >= this.state.test_sentence.spoken_tones.length} onClick={this.playNativeVoice}>
@@ -221,14 +221,14 @@ class Characterbycharacter extends Component {
           <p style={{"height": "25px"}}>{this.state.voice_present ? "Voice heard" : this.state.recording ?  "Recording..." : ""}</p>
           <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>
             <p className="tooltip" style={{fontSize: "14px", "marginBlockStart": "-1.5em", "marginRight": "20px", "width": "50px"}}>{"Manual Mode"}
-            <span class="tooltiptext">User must press the record button for each character</span>
+            <span className="tooltiptext">User must press the record button for each character</span>
             </p> 
             <label className="switch">
               <input type="checkbox" checked={this.state.automatic_mode} onChange={this.toggleMode} />
               <span className="slider round"></span>
             </label>
            <p className="tooltip" style={{fontSize: "14px", "width": "50px", "marginBlockStart": "-1.5em", "marginLeft": "3%"}}>{"Automatic Mode"}
-           <span class="tooltiptext">Recording will restart automatically after selected chaaracter changes</span>
+           <span className="tooltiptext">Recording will restart automatically after selected chaaracter changes</span>
            </p>
            </div>
            <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "20px"}}>

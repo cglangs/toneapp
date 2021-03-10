@@ -6,7 +6,6 @@ services:
       - 3003:3003
     links:
       - db
-      - tone_service
     depends_on:
       - db
       - mongo_seed

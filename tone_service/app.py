@@ -56,8 +56,6 @@ socketIo = SocketIO(app, cors_allowed_origins="*")
 
 app.debug = True
 
-app.host = '0.0.0.0'
-
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -142,4 +140,4 @@ def cutPhrase(data):
 	return None	
 
 if __name__ == '__main__':
-	socketIo.run(app)
+	socketIo.run(app, host='0.0.0.0', port=5000, debug=True)

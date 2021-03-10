@@ -11,7 +11,7 @@ import './App.css';
 import './Switch.css';
 
 
-let endpoint = "http://tone_service:5000"
+let endpoint = "http://localhost:5000"
 let socket = io.connect(`${endpoint}`)
 class Fullsentence extends Component {
 
@@ -222,12 +222,12 @@ class Fullsentence extends Component {
         <div>
           <button className="defaultButton tooltip" onClick={() => this.replayAudio(strings.BEFORE)}>
             <img style={{"padding": "0","height":  "3vh", "width":  "2vw"}}src="/play-button.svg" />
-            <span class="tooltiptext">Play audio left of cursor</span>
+            <span className="tooltiptext">Play audio left of cursor</span>
           </button>
           <input style={{"width": "65%"}} id="audio-slider" ref={this.audioProgress} type="range" onChange={this.updateTime} />
           <button  className="defaultButton tooltip" onClick={() => this.replayAudio(strings.AFTER)}>
             <img style={{"padding": "0","height":  "3vh", "width":  "2vw"}}src="/play-button.svg" />
-            <span class="tooltiptext">Play audio right of cursor</span>
+            <span className="tooltiptext">Play audio right of cursor</span>
           </button> 
         </div>)}
       </div>
@@ -277,30 +277,30 @@ class Fullsentence extends Component {
             <div style={{display: "flex", flexDirection: "row", justifyContent: "center", "marginTop": "4vh"}}>
               <button className="tooltip" style={{backgroundColor: this.state.is_recording ? "darkgray": "white"}} onClick={this.startRecording}>
                 <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/record-voice-button.svg" />
-                <span class="tooltiptext">Record voice</span>
+                <span className="tooltiptext">Record voice</span>
               </button>
               <button className="tooltip" disabled={btns_disabled}  onClick={()=> this.setState({is_playing: true}, ()=>{this.playWithSlider()})}>
                 <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/play-button.svg" />
-                <span class="tooltiptext">Play audio (cursor will advance)</span>
+                <span className="tooltiptext">Play audio (cursor will advance)</span>
               </button>
               <button  className="tooltip" disabled={btns_disabled || !this.state.is_playing} onClick={this.pauseAudio}>
                     <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/pause-button.svg" />
-                    <span class="tooltiptext">Pause audio (cursor will stop)</span>
+                    <span className="tooltiptext">Pause audio (cursor will stop)</span>
               </button>
               <button   className="tooltip" disabled={btns_disabled} onClick={() => this.replayAudio(strings.ALL)}>
                     <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/replay-button.svg" />
-                    <span class="tooltiptext">Play entire remaining audio(cursor will not move)</span>
+                    <span className="tooltiptext">Play entire remaining audio(cursor will not move)</span>
               </button>
                <button  className="tooltip" disabled={btns_disabled} onClick={this.undoLastTone}>
                     <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/backspace-button.svg" />
-                    <span class="tooltiptext">Undo last audio cut</span>
+                    <span className="tooltiptext">Undo last audio cut</span>
               </button>
                <button  className="tooltip" disabled={btns_disabled} onClick={this.restartSentence}>
                     <img style={{"padding": "0","height":  "7vh", "width":  "4vw"}}src="/delete-button.svg" />
-                    <span class="tooltiptext">Restart sentence</span>
+                    <span className="tooltiptext">Restart sentence</span>
               </button>
               <button  className="tooltip" disabled={btns_disabled} onClick={this.getTone}>
-                    <span class="tooltiptext">Get tone of audio left of the cursor</span>
+                    <span className="tooltiptext">Get tone of audio left of the cursor</span>
                     Get Tone 
               </button>
              </div>
