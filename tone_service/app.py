@@ -25,28 +25,22 @@ TIMEOUT_LENGTH = 0.05
 
 f_name_directory = './records'
 
-fnames = [audio_file for audio_file in os.listdir("spectrograms")]
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 44100
+
+f_name_directory = './tone_records'
+phrase_directory = './phrase_records'
+p = pyaudio.PyAudio()
+
+with open('fnames.pkl', 'rb') as f:
+	fnames = pickle.load(f)
 labels = [fname.split("_")[-3][-1] for fname in fnames]
 
-df = pd.DataFrame({'fnames':fnames, 'labels':labels})
 def get_x(r): return "spectrograms/" + r['fnames']
 def get_y(r): return r['labels']
 
-def splitter(df):
-    train = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) != "FV1"].tolist()
-    valid = df.index[df["fnames"].apply(lambda x: x.split('_')[-2]) == "FV1"].tolist()
-    return train,valid
-
-dblock = DataBlock(blocks=(ImageBlock, CategoryBlock),
-                   splitter=splitter,
-                   get_x=get_x, 
-                   get_y=get_y)
-dls = dblock.dataloaders(df)
-
-
-learn=cnn_learner(dls, models.resnet18, metrics=error_rate)
-learn.load('FV1_big_model')
-
+learn = load_learner('tone_classifier.pkl')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
@@ -56,14 +50,6 @@ socketIo = SocketIO(app, cors_allowed_origins="*")
 
 app.debug = True
 
-
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
-RATE = 44100
-
-f_name_directory = './tone_records'
-phrase_directory = './phrase_records'
-p = pyaudio.PyAudio()
 
 def getTone(filename, characterIndex):
 	signal, sr = librosa.load(filename)

@@ -11,7 +11,7 @@ const { ACCESS_SECRET, REFRESH_SECRET, getUserId } = require('./utils')
 const path = require('path');
 const app = express();
 
-mongoose.connect('mongodb://db/tone_db', {useNewUrlParser: true});
+mongoose.connect('mongodb://localhost/tone_db', {useNewUrlParser: true});
 
 const userSchema = new mongoose.Schema({
   user_name: String,

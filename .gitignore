@@ -1,7 +1,7 @@
 tone_perfect
 tone_wav
-tone_service/spectrograms
-tone_service/models
+spectrograms
+models
 tone_service/phrase_records
 tone_service/tone_records
 notes.txt

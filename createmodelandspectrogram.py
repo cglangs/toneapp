@@ -79,5 +79,6 @@ learn.fine_tune(3)
 
 #dest = path + '/fastai'
 #learn.save(dest + '/FV3_3epoch_model')
+#learn.export('models/tone_classifier.pkl')
 
 '''
