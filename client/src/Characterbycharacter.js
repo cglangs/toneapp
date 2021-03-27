@@ -55,20 +55,17 @@ class Characterbycharacter extends Component {
 
   componentDidUpdate = (prevProps) => {
     if(prevProps.sentence.phrase_order && prevProps.sentence.phrase_order !== this.props.sentence.phrase_order){
-      console.log("UPDATE")
       this.setState({test_sentence: this.props.sentence})
     }
   }
 
   checkPhrase = () => {
-    console.log(this.state.tones_recorded)
     let isCorrect = false
     if(!this.state.sentence_finished && this.state.automatic_mode){
       this.startRecording()
     } else if(this.state.sentence_finished){
       isCorrect = this.state.tones_recorded.every((tone,index) => tone === this.state.test_sentence.spoken_tones[index])    
     }
-    console.log(isCorrect,this.state.sentence_finished, this.props.user, this.state.test_sentence.is_completed_char,this.state.test_sentence.spoken_tones)
     if(isCorrect && this.props.user && !this.state.test_sentence.is_completed_char){
       this.props.mutationFunction(true, this.state.test_sentence.is_completed_full)
     }
@@ -131,7 +128,7 @@ class Characterbycharacter extends Component {
   }
 
   playNativeVoice = () => {
-    const letters = this.state.test_sentence.pinyin_no_tones[this.state.currentIndex]
+    const letters = this.state.test_sentence.pinyin_no_tones[this.state.currentIndex].toLowerCase()
     const toneNumber = this.state.test_sentence.spoken_tones[this.state.currentIndex]
     const fileName = '/native_voice_audio/' + letters + toneNumber + '_FV1_MP3.mp3'
     const audio = new Audio(fileName)
