@@ -1,5 +1,9 @@
 # Mandarin Tone Practice App
 
+## Description
+
+This application is a tool for practicing pronunciaion of tones in Mandarin phrases. It records your voice, and will detect the tone in your voice using a maching learning model (fastai) built using the Tone Perfect dataset: https://tone.lib.msu.edu/. It does not include the neutral tone. A video describing it's functionality can be found here: <>.
+
 ## Requirements
 * git
 * docker
