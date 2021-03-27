@@ -4,9 +4,6 @@ import gql from 'graphql-tag';
 import { redirectToLearnComponent} from './utils'
 import { Link} from 'react-router-dom'
 
-
-
-
 const GET_DECKS = gql`
 query getDeckList {
   getDecks {
@@ -15,8 +12,14 @@ query getDeckList {
   }
 }
 `
-const GET_PHRASES = gql`
+export const GET_PHRASES = gql`
 query getPhraseList($deck_id: Int!) {
+  me {
+    _id
+    user_name
+    user_role
+    user_password
+  }
   getPhrasesInDeck(deck_id: $deck_id) {
     _id
     phrase_order
@@ -62,7 +65,7 @@ class Dashboard extends Component {
             Char Mode
             <span class="tooltiptext">Practice each character separately</span>
             </Link>
-            <span className={"circle " + (phrase.is_completed_char ? "" : "hide")}/>
+            <span className={"circle " + ((phrase.spoken_tones.length > 1 && phrase.is_completed_full) || phrase.is_completed_char ? "" : "hide")}/>
             <Link className="menuSubItemLink tooltip"
               to={{
                 pathname: "/learn/" + deck_id + "/" + phrase.phrase_order,
@@ -72,7 +75,7 @@ class Dashboard extends Component {
             Full Mode
             <span class="tooltiptext">Practice entire phrase</span>
             </Link>
-             <span className={"circle " + (phrase.is_completed_char ? "" : "hide")}/>     
+             <span className={"circle " + ((phrase.spoken_tones.length == 1 && phrase.is_completed_char) || phrase.is_completed_full ? "" : "hide")}/>     
             </div>
           )}
           </div>
@@ -90,7 +93,9 @@ class Dashboard extends Component {
         if (error) return <div>error</div>
         return(
           <div className="menuContainer">
-            <div className="menuHeader"/>
+            <div className="menuHeader">
+            <p style={{"marginLeft": "10%", "fontSize": "2vw"}}>Decks</p>
+            </div>
             <div className="menuList">
               {data.getDecks.map((deck, index)=>
                 <div className="menuItem" onClick={() => this.selectMenuItem(index)}>

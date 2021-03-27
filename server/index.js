@@ -11,7 +11,7 @@ const { ACCESS_SECRET, REFRESH_SECRET, getUserId } = require('./utils')
 const path = require('path');
 const app = express();
 
-mongoose.connect('mongodb://localhost/tone_db', {useNewUrlParser: true});
+mongoose.connect('mongodb://db/tone_db', {useNewUrlParser: true});
 
 const userSchema = new mongoose.Schema({
   user_name: String,
@@ -146,7 +146,6 @@ async function getPhrasesInDeck(object, params, ctx, resolveInfo) {
 
 async function setPhraseLearned(object, params, ctx, resolveInfo){
   let updateObject = {is_completed_char: params.is_completed_char, is_completed_full: params.is_completed_full}
-  console.log(ctx.req.userId)
   const test =  await UserProgress.findOneAndUpdate({ user_id: ctx.req.userId, deck_id: params.deck_id, phrase_order: params.phrase_order }, updateObject, {upsert: true}, function (err, small) {
     if (err){
       throw new Error('Error')

@@ -1,8 +1,10 @@
 import order_phrases
 from pymongo import MongoClient
 
-client = MongoClient('mongodb://localhost:27017/')
-#client.drop_database('tone_db')
+client = MongoClient('mongodb://db:27017/')
+dbnames = client.list_database_names()
+if 'tone_db' in dbnames:
+	client.drop_database('tone_db')
 '''
 intervals_data = [
 	{"interval_id": 0, "seconds": 0},

@@ -46,7 +46,10 @@ class Characterbycharacter extends Component {
       const prediction = this.state.test_sentence.spoken_tones[data["index"]] === "_" ? "_" : data["prediction"].toString()
       const newToneArray = [...this.state.tones_recorded]
       newToneArray.splice(data["index"], 1, prediction)
-      this.setState({tones_recorded: newToneArray},() => {this.checkPhrase()})
+      const finished = newToneArray.length === this.state.test_sentence.spoken_tones.length
+      const automatic = this.state.automatic_mode && !finished
+      const showPinyin = finished || this.state.show_pinyin
+      this.setState({tones_recorded: newToneArray, sentence_finished: finished},() => {this.checkPhrase()})
     })
   }
 
@@ -58,12 +61,14 @@ class Characterbycharacter extends Component {
   }
 
   checkPhrase = () => {
+    console.log(this.state.tones_recorded)
     let isCorrect = false
     if(!this.state.sentence_finished && this.state.automatic_mode){
       this.startRecording()
     } else if(this.state.sentence_finished){
       isCorrect = this.state.tones_recorded.every((tone,index) => tone === this.state.test_sentence.spoken_tones[index])    
     }
+    console.log(isCorrect,this.state.sentence_finished, this.props.user, this.state.test_sentence.is_completed_char,this.state.test_sentence.spoken_tones)
     if(isCorrect && this.props.user && !this.state.test_sentence.is_completed_char){
       this.props.mutationFunction(true, this.state.test_sentence.is_completed_full)
     }
@@ -72,21 +77,16 @@ class Characterbycharacter extends Component {
 
   saveRecording = (newAudio, blob) => {
     newAudio.src = URL.createObjectURL(blob)
-    const finished = this.state.tones_recorded.length === this.state.test_sentence.spoken_tones.length - 1 && this.state.currentIndex === this.state.test_sentence.spoken_tones.length - 1
-    const automatic = this.state.automatic_mode && !finished
-    const showPinyin = finished || this.state.show_pinyin
     const previousIndex = this.state.currentIndex
     const newAudioArray = [...this.state.new_audio]
     newAudioArray.splice(this.state.currentIndex, 1, newAudio)
 
-    
-    this.setState({voice_present: false, new_audio: newAudioArray, recording: false, currentIndex: previousIndex + 1, sentence_finished: finished, automatic_mode: automatic, show_pinyin: showPinyin}, () =>
+    this.setState({voice_present: false, new_audio: newAudioArray, recording: false, currentIndex: previousIndex + 1}, () =>
     {
         socket.emit('tone_recorded', {voice_recording: blob, character_index: previousIndex, threshold: this.state.threshold_decibels});
     })
    
   }
-
 
   startRecording = () => {
     let _this = this

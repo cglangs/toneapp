@@ -9,14 +9,12 @@ class Header extends Component {
   render() {
     const isLoggedIn = !!getCookie('access-token');
     const currentPath = this.props.location.pathname
-    console.log(currentPath)
-
 
     return (
       <div>
         <div>
-            {currentPath !== "/dashboard" && (<div className="flex">
-              <Link to="/dashboard">
+            {currentPath !== "/" && (<div className="flex">
+              <Link to="/">
                 Dashboard
               </Link>
             </div>)}

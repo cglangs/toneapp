@@ -63,6 +63,7 @@
   width: 100%;
   position: absolute;
   border-bottom: 5px solid white;  top: 0;
+  text-align: left;
 }
 
 .menuList {

@@ -5,30 +5,7 @@ import { useQuery, useMutation } from  'react-apollo';
 import gql from 'graphql-tag';
 import { redirectToLearnComponent} from './utils'
 import { useParams } from "react-router-dom";
-
-
-const GET_PHRASE = gql`
-query getPhrase($deck_id: Int!) {
-  me {
-    _id
-    user_name
-    user_role
-    user_password
-  }
-  getPhrasesInDeck(deck_id: $deck_id) {
-    phrase_order
-    full_phrase
-    phrase_no_punctuation
-    word_list
-    pinyin
-    pinyin_no_tones
-    written_tones
-    spoken_tones
-    is_completed_char
-    is_completed_full
-  }
-}
-`
+import { GET_PHRASES } from './Dashboard'
 
 const UPDATE_PROGRESS = gql`
 mutation updateProgress($deck_id: Int!, $phrase_order: Int!, $is_completed_char: Boolean!, $is_completed_full: Boolean!) {
@@ -48,7 +25,7 @@ const Learn = (props) => {
   const characterByCharacterRef = useRef();
   const fullSentenceRef = useRef();
 
-  const { loading, error, data } = useQuery(GET_PHRASE, {
+  const { loading, error, data } = useQuery(GET_PHRASES, {
     variables: {deck_id: parseInt(deckId)}
   });
 
@@ -90,12 +67,13 @@ const Learn = (props) => {
   function submitCorrect(is_completed_char, is_completed_full){
     updateProgress({variables:{deck_id: parseInt(deckId), phrase_order: parseInt(phraseOrder), is_completed_char: is_completed_char, is_completed_full: is_completed_full}, 
       update: (store)=> {
-        const data = store.readQuery({ query: GET_PHRASE, variables: { deck_id: parseInt(deckId) } })
-        data.getPhrasesInDeck[phraseOrder - 1]["is_completed_char"] = is_completed_char
-        data.getPhrasesInDeck[phraseOrder - 1]["is_completed_full"] = is_completed_full
+        const dashboardData = store.readQuery({ query: GET_PHRASES, variables: { deck_id: parseInt(deckId) } })
+        dashboardData.getPhrasesInDeck[phraseOrder - 1]["is_completed_char"] = is_completed_char
+        dashboardData.getPhrasesInDeck[phraseOrder - 1]["is_completed_full"] = is_completed_full
+        console.log(dashboardData)
         store.writeQuery({
-          query: GET_PHRASE,
-          data
+          query: GET_PHRASES,
+          dashboardData
         })
      }})    
   }
@@ -108,7 +86,7 @@ const Learn = (props) => {
     <div className="LearnContainer">
       <div className="Navbar">
         <p className={!fullSentenceMode ? "selectedItem": ""} onClick={() => changeMode(false)}>Character by Character</p>
-        <p className={fullSentenceMode ? "selectedItem": ""} onClick={() => changeMode(true)}>Full Sentence</p>
+        <p className={fullSentenceMode ? "selectedItem": ""} onClick={() => changeMode(true)}>Full Phrase</p>
       </div>
       
       <div className="toneTrainingInterface">

@@ -125,9 +125,5 @@ def cutPhrase(data):
 	cut_phrase(data)
 	return None	
 
-@app.route('/test')
-def test():
-	return '<h1>Welcome to our server !!</h1>'
-
 if __name__ == '__main__':
 	socketIo.run(app, host='0.0.0.0', port=5000, debug=True)
