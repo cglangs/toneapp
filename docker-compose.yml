@@ -15,12 +15,6 @@ services:
       - 5000:5000
   db:
     image: mongo:4.0.8
-    healthcheck:
-        test: ["CMD", "curl",  "localhost:9200/_cluster/health?wait_for_status=yellow"]
-        start_period: 120s
-        timeout: 5s
-        interval: 15s
-        retries: 5
     volumes:
       - ./mongo-volume:/data/db
     ports:
