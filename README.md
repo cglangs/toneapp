@@ -21,3 +21,4 @@ This application is a tool for practicing pronunciaion of tones in Mandarin phra
 - Run app
 - `docker-compose up`
 
+- Open `http://localhost:3003/` in browser 
