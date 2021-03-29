@@ -13,3 +13,6 @@ test_spectrograms
 mongo_seed/phrases.tsv
 mongo_seed/phrases_edited.tsv
 mongo-volume
+createmodelandspectrogram.py
+recorder.py
+tutorial.py
