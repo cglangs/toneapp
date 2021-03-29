@@ -1,3 +1,4 @@
+'''
 import pyaudio
 import math
 import struct
@@ -28,7 +29,7 @@ swidth = 2
 TIMEOUT_LENGTH = 0.05
 
 f_name_directory = './records'
-'''
+
 fnames = [audio_file for audio_file in os.listdir("spectrograms")]
 labels = [fname.split("_")[-3][-1] for fname in fnames]
 
@@ -50,7 +51,7 @@ dls = dblock.dataloaders(df)
 
 learn=cnn_learner(dls, models.resnet18, metrics=error_rate)
 learn.load('FV1_big_model')
-'''
+
 class Recorder:
 
     @staticmethod
@@ -148,3 +149,4 @@ class Recorder:
 a = Recorder()
 
 a.listen()
+'''
