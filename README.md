@@ -13,6 +13,9 @@ This application is a tool for practicing pronunciaion of tones in Mandarin phra
 - Clone repository 
 - `git clone git@github.com:cglangs/toneapp.git` 
 
+- Create mongo volume
+- `mkdir mongo-volume`
+
 - Start mongo database
 - `docker-compose up -d db`
 
