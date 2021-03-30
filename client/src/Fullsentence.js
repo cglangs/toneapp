@@ -136,7 +136,6 @@ class Fullsentence extends Component {
 
   replayAudio = (spriteName) => {
     if(this.howler != null){
-      //const minimum = this.state.character_offsets.length ? this.state.character_offsets[this.state.character_offsets.length -1] : 0
       const minimum = parseInt(this.audioProgress.current.min)
       const maximum = parseInt(this.audioProgress.current.max)
       const currentValue = parseInt(this.audioProgress.current.valueAsNumber)
@@ -256,7 +255,6 @@ class Fullsentence extends Component {
   }
 
   render(){
-    //const btn_class = this.state.is_recording ? "pressedButton" : "defaultButton";
     const spoken_tones = this.state.sentence_finished ? this.state.test_sentence.spoken_tones : ''
     const btns_disabled = this.howler == null
     console.log(this.state)
@@ -267,7 +265,6 @@ class Fullsentence extends Component {
               <p style={{"textAlign": "center", height: "1vh"}}>{this.state.show_pinyin && this.state.test_sentence.pinyin}</p>
               <span className={"circle " + (this.props.isComplete() ? "" : "hide")}/>  
               <span style={{"textAlign": "center"}}>{this.state.test_sentence.display}</span>
-              {/*this.diplayString(spoken_tones, false)*/}
               {this.diplayString(this.state.test_sentence.characters, true)}
               {this.diplayString(this.state.tones_recorded.join(''), false)}
             </div>

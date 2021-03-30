@@ -61,7 +61,6 @@ async function signup(object, params, ctx, resolveInfo) {
   
   try{
   	user = await newUser.save()
-  	//const token = jwt.sign({ userId: user._id, role: user.user_role }, ACCESS_SECRET)
   	ctx.req.res.cookie("refresh-token", jwt.sign({ userId: user._id, role: user.user_role }, REFRESH_SECRET), { maxAge: 24 * 60 * 60 * 1000})
     ctx.req.res.cookie("access-token", jwt.sign({ userId: user._id, role: user.user_role }, ACCESS_SECRET), { maxAge: 15 * 60 * 1000 })
     return user
@@ -88,7 +87,6 @@ async function login(object, params, ctx, resolveInfo) {
   user.user_password = null
   ctx.req.res.cookie("refresh-token", jwt.sign({ userId: user._id, role: user.user_role }, REFRESH_SECRET), { maxAge: 24 * 60 * 60 * 1000})
   ctx.req.res.cookie("access-token", jwt.sign({ userId: user._id, role: user.user_role }, ACCESS_SECRET), { maxAge: 15 * 60 * 1000 })
-  //const token = jwt.sign({ userId: user._id, role: user.user_role }, ACCESS_SECRET)
   return user
 }
 
@@ -294,7 +292,6 @@ const server = new ApolloServer({
 
 const port = process.env.PORT || 3003;
 server.applyMiddleware({ app });
-//server.applyMiddleware({ app, cors: corsOptions });
 
 app.listen({ port: port }, () =>
   console.log(`GraphQL API ready at http://localhost:${port}`)
